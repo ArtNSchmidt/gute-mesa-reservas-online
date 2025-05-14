@@ -1,13 +1,14 @@
 
-import React, { createContext, useState, useContext, ReactNode } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
 import { Admin, AuthState } from '@/types';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AuthContextProps {
   authState: AuthState;
   login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -17,84 +18,178 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [authState, setAuthState] = useState<AuthState>({
     admin: null,
     isAuthenticated: false,
-    isLoading: false
+    isLoading: true
   });
 
-  const login = async (email: string, password: string): Promise<void> => {
-    setAuthState(prev => ({ ...prev, isLoading: true }));
-    
-    try {
-      // Mock authentication - in a real app, this would be an API call
-      if (email === 'arturnogschmidt1@hotmail.com' && password === '12345678') {
-        const admin: Admin = {
-          email,
-          name: 'Administrador'
-        };
+  // Verificar sessão ao carregar
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
         
-        // Store authentication info in localStorage
-        localStorage.setItem('admin', JSON.stringify(admin));
-        
+        if (session) {
+          // Verificar se o usuário é admin
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+            
+          if (profileError) throw profileError;
+          
+          if (profileData.role === 'admin') {
+            const admin: Admin = {
+              email: profileData.email,
+              name: profileData.name || 'Administrador'
+            };
+            
+            setAuthState({
+              admin,
+              isAuthenticated: true,
+              isLoading: false
+            });
+          } else {
+            // Se não for admin, deslogar
+            await supabase.auth.signOut();
+            setAuthState({
+              admin: null,
+              isAuthenticated: false,
+              isLoading: false
+            });
+          }
+        } else {
+          setAuthState({
+            admin: null,
+            isAuthenticated: false,
+            isLoading: false
+          });
+        }
+      } catch (error) {
+        console.error('Erro ao verificar sessão:', error);
         setAuthState({
-          admin,
-          isAuthenticated: true,
+          admin: null,
+          isAuthenticated: false,
           isLoading: false
         });
+      }
+    };
+    
+    checkSession();
+    
+    // Ouvir mudanças de autenticação
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setAuthState(prev => ({ ...prev, isLoading: true }));
         
-        navigate('/admin/dashboard');
-        
+        if (event === 'SIGNED_IN' && session) {
+          try {
+            // Verificar se o usuário é admin ao fazer login
+            const { data: profileData, error: profileError } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .single();
+              
+            if (profileError) throw profileError;
+            
+            if (profileData.role === 'admin') {
+              const admin: Admin = {
+                email: profileData.email,
+                name: profileData.name || 'Administrador'
+              };
+              
+              setAuthState({
+                admin,
+                isAuthenticated: true,
+                isLoading: false
+              });
+            } else {
+              // Se não for admin, deslogar
+              await supabase.auth.signOut();
+              
+              toast({
+                variant: "destructive",
+                title: "Acesso negado",
+                description: "Você não tem permissão para acessar o painel administrativo.",
+              });
+              
+              setAuthState({
+                admin: null,
+                isAuthenticated: false,
+                isLoading: false
+              });
+            }
+          } catch (error) {
+            console.error('Erro ao verificar perfil:', error);
+            setAuthState({
+              admin: null,
+              isAuthenticated: false,
+              isLoading: false
+            });
+          }
+        } else if (event === 'SIGNED_OUT') {
+          setAuthState({
+            admin: null,
+            isAuthenticated: false,
+            isLoading: false
+          });
+        }
+      }
+    );
+    
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [navigate]);
+
+  const login = async (email: string, password: string): Promise<void> => {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+      
+      if (error) throw error;
+      
+      if (data.user) {
+        // Verificação do perfil é feita no listener de auth state
         toast({
           title: "Login realizado com sucesso",
           description: "Bem-vindo ao painel administrativo.",
         });
-      } else {
-        throw new Error('Credenciais inválidas');
+        
+        navigate('/admin/dashboard');
       }
-    } catch (error) {
-      setAuthState({
-        admin: null,
-        isAuthenticated: false,
-        isLoading: false
-      });
-      
+    } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Erro de login",
-        description: "Email ou senha inválidos.",
+        description: error.message || "Email ou senha inválidos.",
+      });
+      
+      throw error;
+    }
+  };
+
+  const logout = async (): Promise<void> => {
+    try {
+      await supabase.auth.signOut();
+      
+      toast({
+        title: "Logout realizado",
+        description: "Você foi desconectado com sucesso.",
+      });
+      
+      navigate('/admin/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+      toast({
+        variant: "destructive",
+        title: "Erro ao sair",
+        description: "Não foi possível realizar o logout. Por favor, tente novamente.",
       });
     }
   };
-
-  const logout = () => {
-    localStorage.removeItem('admin');
-    setAuthState({
-      admin: null,
-      isAuthenticated: false,
-      isLoading: false
-    });
-    navigate('/admin/login');
-    
-    toast({
-      title: "Logout realizado",
-      description: "Você foi desconectado com sucesso.",
-    });
-  };
-
-  // Check for existing login when the component mounts
-  React.useEffect(() => {
-    const storedAdmin = localStorage.getItem('admin');
-    if (storedAdmin) {
-      try {
-        const admin = JSON.parse(storedAdmin) as Admin;
-        setAuthState({
-          admin,
-          isAuthenticated: true,
-          isLoading: false
-        });
-      } catch (error) {
-        localStorage.removeItem('admin');
-      }
-    }
-  }, []);
 
   return (
     <AuthContext.Provider value={{ authState, login, logout }}>

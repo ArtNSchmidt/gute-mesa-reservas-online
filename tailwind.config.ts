@@ -63,12 +63,13 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Restaurant theme colors
+				// Nova paleta de cores do restaurante
 				restaurant: {
-					'light-green': '#D6F8D6',
-					'medium-green': '#7FC6A4',
-					'dark-teal': '#5D737E',
-					'dark-gray': '#55505C',
+					'light-green': '#94AE89',
+					'dark-wine': '#241623',
+					'lime-green': '#C0DA74',
+					'forest-green': '#3A5A40',
+					'moss-green': '#2e5339',
 				}
 			},
 			borderRadius: {
