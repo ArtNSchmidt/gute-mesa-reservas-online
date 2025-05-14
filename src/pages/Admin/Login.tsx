@@ -8,13 +8,13 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { User, ShieldCheck, AlertCircle, Loader2, CheckCircle } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
 
-// Separate the login form component to use the useAuth hook
-const LoginForm: React.FC = () => {
+// Login page component
+const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -86,175 +86,166 @@ const LoginForm: React.FC = () => {
   };
 
   return (
-    <Card className="w-full max-w-md shadow-lg border-restaurant-forest-green/20">
-      <CardHeader className="space-y-1 bg-restaurant-forest-green text-white rounded-t-lg p-6">
-        <CardTitle className="text-2xl font-playfair font-bold flex items-center gap-2">
-          <User size={24} />
-          Portal Administrativo
-        </CardTitle>
-        <CardDescription className="text-gray-100">
-          Acesse o painel administrativo da Taberna do Gute
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="p-6">
-        <form onSubmit={handleLogin} className="space-y-4">
-          {loginError && (
-            <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-800">
-              <AlertCircle className="h-4 w-4 text-red-600" />
-              <AlertDescription>{loginError}</AlertDescription>
-            </Alert>
-          )}
-          
-          <div className="space-y-2">
-            <Label htmlFor="email" className="text-gray-700">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="seu.email@exemplo.com"
-              className="border-gray-300 focus:border-restaurant-forest-green focus:ring focus:ring-restaurant-forest-green/20"
-              required
-              disabled={isLoading}
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="password" className="text-gray-700">Senha</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Sua senha"
-              className="border-gray-300 focus:border-restaurant-forest-green focus:ring focus:ring-restaurant-forest-green/20"
-              required
-              disabled={isLoading}
-            />
-          </div>
-          
-          <Button 
-            type="submit" 
-            className="w-full bg-restaurant-light-green hover:bg-restaurant-forest-green transition-colors text-restaurant-dark-wine font-medium py-6"
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <span className="flex items-center gap-2">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Entrando...
-              </span>
-            ) : 'Entrar'}
-          </Button>
-        </form>
-
-        {/* Admin initialization */}
-        <div className="mt-6 text-center border-t border-gray-200 pt-4">
-          <Dialog open={showAdminDialog} onOpenChange={(open) => {
-            setShowAdminDialog(open);
-            if (!open) {
-              setEmailSent(false);
-              setNewAdminEmail('');
-              setAdminError(null);
-            }
-          }}>
-            <DialogTrigger asChild>
-              <Button variant="outline" className="text-restaurant-forest-green hover:text-restaurant-dark-wine flex items-center gap-2">
-                <ShieldCheck size={16} />
-                Inicializar Administrador
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Adicionar Administrador Inicial</DialogTitle>
-                <DialogDescription>
-                  Esta opção deve ser usada apenas para criar o administrador inicial do sistema.
-                  Um email de confirmação será enviado para o endereço fornecido.
-                </DialogDescription>
-              </DialogHeader>
-              <form onSubmit={handleCreateAdmin} className="space-y-4 py-4">
-                {emailSent ? (
-                  <Alert className="bg-green-50 border-green-200 text-green-800">
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                    <AlertDescription>
-                      Email de confirmação enviado com sucesso para {newAdminEmail}. 
-                      Por favor, verifique sua caixa de entrada e a pasta de spam.
-                    </AlertDescription>
-                  </Alert>
-                ) : adminError ? (
-                  <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-800">
-                    <AlertCircle className="h-4 w-4 text-red-600" />
-                    <AlertDescription>{adminError}</AlertDescription>
-                  </Alert>
-                ) : null}
-                
-                <div className="space-y-2">
-                  <Label htmlFor="newAdminEmail">Email do Administrador</Label>
-                  <Input
-                    id="newAdminEmail"
-                    type="email"
-                    value={newAdminEmail}
-                    onChange={(e) => setNewAdminEmail(e.target.value)}
-                    placeholder="admin@exemplo.com"
-                    required
-                    disabled={isCreatingAdmin || emailSent}
-                  />
-                </div>
-                
-                <DialogFooter className="flex flex-col sm:flex-row gap-2">
-                  {emailSent ? (
-                    <>
-                      <Button 
-                        type="button" 
-                        variant="outline"
-                        onClick={() => setShowAdminDialog(false)}
-                        className="w-full"
-                      >
-                        Fechar
-                      </Button>
-                      <Button 
-                        type="button"
-                        onClick={() => {
-                          setEmailSent(false);
-                          setNewAdminEmail('');
-                        }}
-                        className="w-full bg-restaurant-forest-green text-white"
-                      >
-                        Enviar para outro email
-                      </Button>
-                    </>
-                  ) : (
-                    <Button 
-                      type="submit" 
-                      disabled={isCreatingAdmin}
-                      className="w-full bg-restaurant-forest-green text-white"
-                    >
-                      {isCreatingAdmin ? (
-                        <span className="flex items-center gap-2">
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          Enviando...
-                        </span>
-                      ) : 'Enviar Confirmação'}
-                    </Button>
-                  )}
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
-
-// Main Login page wrapper that provides the AuthProvider
-const Login: React.FC = () => {
-  return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-white to-gray-100">
       <Navbar />
       <div className="flex-1 flex items-center justify-center p-4 sm:p-6 md:p-8">
-        <AuthProvider>
-          <LoginForm />
-        </AuthProvider>
+        <Card className="w-full max-w-md shadow-lg border-restaurant-forest-green/20">
+          <CardHeader className="space-y-1 bg-restaurant-forest-green text-white rounded-t-lg p-6">
+            <CardTitle className="text-2xl font-playfair font-bold flex items-center gap-2">
+              <User size={24} />
+              Portal Administrativo
+            </CardTitle>
+            <CardDescription className="text-gray-100">
+              Acesse o painel administrativo da Taberna do Gute
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-6">
+            <form onSubmit={handleLogin} className="space-y-4">
+              {loginError && (
+                <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-800">
+                  <AlertCircle className="h-4 w-4 text-red-600" />
+                  <AlertDescription>{loginError}</AlertDescription>
+                </Alert>
+              )}
+              
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-gray-700">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="seu.email@exemplo.com"
+                  className="border-gray-300 focus:border-restaurant-forest-green focus:ring focus:ring-restaurant-forest-green/20"
+                  required
+                  disabled={isLoading}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-gray-700">Senha</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Sua senha"
+                  className="border-gray-300 focus:border-restaurant-forest-green focus:ring focus:ring-restaurant-forest-green/20"
+                  required
+                  disabled={isLoading}
+                />
+              </div>
+              
+              <Button 
+                type="submit" 
+                className="w-full bg-restaurant-light-green hover:bg-restaurant-forest-green transition-colors text-restaurant-dark-wine font-medium py-6"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Entrando...
+                  </span>
+                ) : 'Entrar'}
+              </Button>
+            </form>
+
+            {/* Admin initialization */}
+            <div className="mt-6 text-center border-t border-gray-200 pt-4">
+              <Dialog open={showAdminDialog} onOpenChange={(open) => {
+                setShowAdminDialog(open);
+                if (!open) {
+                  setEmailSent(false);
+                  setNewAdminEmail('');
+                  setAdminError(null);
+                }
+              }}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="text-restaurant-forest-green hover:text-restaurant-dark-wine flex items-center gap-2">
+                    <ShieldCheck size={16} />
+                    Inicializar Administrador
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Adicionar Administrador Inicial</DialogTitle>
+                    <DialogDescription>
+                      Esta opção deve ser usada apenas para criar o administrador inicial do sistema.
+                      Um email de confirmação será enviado para o endereço fornecido.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={handleCreateAdmin} className="space-y-4 py-4">
+                    {emailSent ? (
+                      <Alert className="bg-green-50 border-green-200 text-green-800">
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <AlertDescription>
+                          Email de confirmação enviado com sucesso para {newAdminEmail}. 
+                          Por favor, verifique sua caixa de entrada e a pasta de spam.
+                        </AlertDescription>
+                      </Alert>
+                    ) : adminError ? (
+                      <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-800">
+                        <AlertCircle className="h-4 w-4 text-red-600" />
+                        <AlertDescription>{adminError}</AlertDescription>
+                      </Alert>
+                    ) : null}
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="newAdminEmail">Email do Administrador</Label>
+                      <Input
+                        id="newAdminEmail"
+                        type="email"
+                        value={newAdminEmail}
+                        onChange={(e) => setNewAdminEmail(e.target.value)}
+                        placeholder="admin@exemplo.com"
+                        required
+                        disabled={isCreatingAdmin || emailSent}
+                      />
+                    </div>
+                    
+                    <DialogFooter className="flex flex-col sm:flex-row gap-2">
+                      {emailSent ? (
+                        <>
+                          <Button 
+                            type="button" 
+                            variant="outline"
+                            onClick={() => setShowAdminDialog(false)}
+                            className="w-full"
+                          >
+                            Fechar
+                          </Button>
+                          <Button 
+                            type="button"
+                            onClick={() => {
+                              setEmailSent(false);
+                              setNewAdminEmail('');
+                            }}
+                            className="w-full bg-restaurant-forest-green text-white"
+                          >
+                            Enviar para outro email
+                          </Button>
+                        </>
+                      ) : (
+                        <Button 
+                          type="submit" 
+                          disabled={isCreatingAdmin}
+                          className="w-full bg-restaurant-forest-green text-white"
+                        >
+                          {isCreatingAdmin ? (
+                            <span className="flex items-center gap-2">
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                              Enviando...
+                            </span>
+                          ) : 'Enviar Confirmação'}
+                        </Button>
+                      )}
+                    </DialogFooter>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </CardContent>
+        </Card>
       </div>
       <Footer />
     </div>

@@ -24,9 +24,6 @@ export const handleLogin = async (email: string, password: string): Promise<bool
       description: "Você será redirecionado para o painel administrativo.",
     });
     
-    // Redirecionar programaticamente para o Dashboard
-    window.location.href = '/admin/dashboard';
-    
     return true;
   } catch (error: any) {
     console.error('Login error:', error);

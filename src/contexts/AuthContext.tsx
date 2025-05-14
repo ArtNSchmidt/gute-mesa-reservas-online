@@ -7,7 +7,7 @@ import { handleLogin, handleLogout, createAdminUser } from '@/utils/auth';
 interface AuthContextProps {
   authState: AuthState;
   login: (email: string, password: string) => Promise<void>;
-  logout: (redirectCallback?: () => void) => Promise<void>; // Modified to accept a redirect callback
+  logout: (redirectCallback?: () => void) => Promise<void>;
   createAdmin: (email: string, password?: string) => Promise<string | null>;
 }
 
