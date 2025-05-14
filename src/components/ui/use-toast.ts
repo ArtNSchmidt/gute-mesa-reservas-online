@@ -1,7 +1,7 @@
 
 import { useToast } from "@/hooks/use-toast";
 import { toast as hookToast } from "@/hooks/use-toast";
-import type { Toast } from "@/hooks/use-toast";
+import type { ToasterToast } from "@/hooks/use-toast";
 
 // Função base para criar toasts com estilos consistentes
 const createStyledToast = (
