@@ -11,6 +11,7 @@ import Confirmation from "./pages/Confirmation";
 import Login from "./pages/Admin/Login";
 import Dashboard from "./pages/Admin/Dashboard";
 import CreateAdmin from "./pages/Admin/CreateAdmin";
+import InitializeAdmin from "./pages/Admin/InitializeAdmin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="/admin/login" element={<Login />} />
             <Route path="/admin/dashboard" element={<Dashboard />} />
             <Route path="/admin/create-admin" element={<CreateAdmin />} />
+            <Route path="/admin/initialize" element={<InitializeAdmin />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

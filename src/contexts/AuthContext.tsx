@@ -9,6 +9,7 @@ interface AuthContextProps {
   authState: AuthState;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  createAdmin: (email: string, password?: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -169,8 +170,57 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  // Função para criar um novo administrador
+  const createAdmin = async (email: string, password?: string): Promise<void> => {
+    try {
+      // Se não tiver uma senha, gera uma aleatória
+      const adminPassword = password || Math.random().toString(36).slice(-10);
+      
+      // 1. Criar o usuário com auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password: adminPassword,
+      });
+      
+      if (authError) throw authError;
+      
+      if (!authData.user) {
+        throw new Error("Falha ao criar usuário");
+      }
+      
+      // 2. Atualizar o perfil do usuário para administrador
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ 
+          name: 'Administrador', 
+          role: 'admin' 
+        })
+        .eq('id', authData.user.id);
+      
+      if (profileError) throw profileError;
+      
+      toast({
+        title: "Administrador criado com sucesso",
+        description: password 
+          ? "O novo administrador pode fazer login com as credenciais criadas." 
+          : `Uma senha temporária foi gerada: ${adminPassword}. Informe ao administrador.`,
+      });
+      
+    } catch (error: any) {
+      console.error('Erro ao criar admin:', error);
+      
+      toast({
+        variant: "destructive",
+        title: "Erro ao criar admin",
+        description: error.message || "Não foi possível criar o administrador.",
+      });
+      
+      throw error;
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ authState, login, logout }}>
+    <AuthContext.Provider value={{ authState, login, logout, createAdmin }}>
       {children}
     </AuthContext.Provider>
   );
