@@ -32,21 +32,20 @@ const Footer: React.FC = () => {
             <ul className="space-y-3 text-gray-300">
               <li className="flex items-start space-x-3">
                 <MapPin className="h-5 w-5 text-restaurant-lime-green shrink-0 mt-0.5" />
-                <span>Av. Presidente Castelo Branco, 3498 - Horizonte, CE, 62880-000</span>
+                <span>Av. Joaquim Nogueira Lopes, 2998 - Horizonte, CE, 62880-000</span>
               </li>
               <li className="flex items-center space-x-3">
                 <Phone className="h-5 w-5 text-restaurant-lime-green shrink-0" />
-                <span>(85) 99999-9999</span>
+                <span>(85) 98181-5840</span>
               </li>
               <li className="flex items-center space-x-3">
                 <Mail className="h-5 w-5 text-restaurant-lime-green shrink-0" />
-                <span>contato@tabernadogute.com.br</span>
+                <span>schmidttaberna@hotmail.com</span>
               </li>
               <li className="flex items-start space-x-3">
                 <Clock className="h-5 w-5 text-restaurant-lime-green shrink-0 mt-0.5" />
                 <div>
-                  <p>Terça a Sexta: 18h - 23h</p>
-                  <p>Sábados e Domingos: 12h - 23h</p>
+                  <p>Terça - Domingo: 11:30 - 15:00</p>
                   <p>Segunda: Fechado</p>
                 </div>
               </li>
@@ -57,7 +56,7 @@ const Footer: React.FC = () => {
             <h4 className="font-playfair text-xl font-bold mb-4 text-white">Mapa</h4>
             <div className="h-[200px] bg-gray-200 rounded-lg overflow-hidden">
               <iframe 
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3980.258333886889!2d-38.4919233!3d-3.9907378!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x7b8b43a0acb27f5%3A0x61f9392e4c043c28!2sAv.%20Pres.%20Castelo%20Branco%2C%203498%20-%20Horizonte%2C%20CE%2C%2062880-000!5e0!3m2!1spt-BR!2sbr!4v1621362128974!5m2!1spt-BR!2sbr" 
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3980.258333886889!2d-38.4919233!3d-3.9907378!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x7b8b43a0acb27f5%3A0x61f9392e4c043c28!2sAv.%20Joaquim%20Nogueira%20Lopes%2C%202998%20-%20Horizonte%2C%20CE%2C%2062880-000!5e0!3m2!1spt-BR!2sbr!4v1621362128974!5m2!1spt-BR!2sbr" 
                 width="100%" 
                 height="100%" 
                 style={{ border: 0 }} 
