@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
@@ -176,14 +177,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       // Se não tiver uma senha, gera uma aleatória
       const adminPassword = password || Math.random().toString(36).slice(-10);
       
-      // Em vez de usar as funções administrativas que requerem service_role,
-      // vamos usar a API pública de autenticação e depois modificar o perfil
-      
-      // 1. Criar o usuário com sign-up normal
+      // 1. Criar o usuário com sign-up normal, com opção para pular verificação de email
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email,
         password: adminPassword,
         options: {
+          emailRedirectTo: window.location.origin + "/admin/login",
           data: {
             name: 'Administrador'
           }

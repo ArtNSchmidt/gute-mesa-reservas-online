@@ -32,7 +32,7 @@ const InitializeAdmin: React.FC = () => {
       
       toast({
         title: "Administrador criado com sucesso",
-        description: "Você pode fazer login com as credenciais criadas",
+        description: "Salve a senha fornecida para fazer login",
         variant: "default",
       });
     } catch (err: any) {
@@ -49,6 +49,7 @@ const InitializeAdmin: React.FC = () => {
     }
   };
 
+  // Se criado com sucesso e o usuário fechou a visualização da senha, redireciona para login
   if (isCreated && !showPassword) {
     return <Navigate to="/admin/login" />;
   }
