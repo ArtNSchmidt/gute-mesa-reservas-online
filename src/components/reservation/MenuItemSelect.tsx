@@ -63,9 +63,6 @@ const MenuItemSelect: React.FC<MenuItemSelectProps> = ({
                         {item.description && (
                           <p className="text-sm text-neutral-500 mt-1">{item.description}</p>
                         )}
-                        {item.price && (
-                          <p className="text-sm font-medium mt-1">R$ {item.price.toFixed(2)}</p>
-                        )}
                       </div>
                       
                       <div className="flex items-center gap-2">
@@ -130,19 +127,8 @@ const MenuItemSelect: React.FC<MenuItemSelectProps> = ({
             {selectedItems.map((item) => (
               <div key={item.id} className="flex justify-between items-center mb-2 last:mb-0">
                 <span>{item.name} x{item.quantity}</span>
-                <span className="text-sm font-medium">
-                  {item.price ? `R$ ${(item.price * item.quantity).toFixed(2)}` : ''}
-                </span>
               </div>
             ))}
-            <div className="border-t border-neutral-200 mt-3 pt-2 flex justify-between font-medium">
-              <span>Total:</span>
-              <span>
-                R$ {selectedItems
-                  .reduce((total, item) => total + ((item.price || 0) * item.quantity), 0)
-                  .toFixed(2)}
-              </span>
-            </div>
           </div>
         </div>
       )}
