@@ -8,6 +8,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { toast } from '@/components/ui/use-toast';
 import ReservationsList from '@/components/admin/ReservationsList';
+import ReservationsManager from '@/components/admin/ReservationsManager';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { LogOut, UserPlus } from 'lucide-react';
@@ -17,6 +18,7 @@ const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [filter, setFilter] = useState<'all' | 'pending' | 'confirmed' | 'rejected' | 'completed' | 'cancelled'>('all');
+  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -143,7 +145,25 @@ const Dashboard: React.FC = () => {
 
           <div className="bg-white shadow-md rounded-lg p-6">
             <div className="mb-6">
-              <h2 className="text-xl font-bold mb-4">Reservas</h2>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold">Reservas</h2>
+                <div className="flex space-x-2">
+                  <Button 
+                    variant={viewMode === 'cards' ? 'default' : 'outline'} 
+                    size="sm"
+                    onClick={() => setViewMode('cards')}
+                  >
+                    Cartões
+                  </Button>
+                  <Button 
+                    variant={viewMode === 'table' ? 'default' : 'outline'} 
+                    size="sm"
+                    onClick={() => setViewMode('table')}
+                  >
+                    Tabela
+                  </Button>
+                </div>
+              </div>
               <Tabs defaultValue="all" onValueChange={(value) => setFilter(value as any)}>
                 <div className="overflow-x-auto pb-2">
                   <TabsList>
@@ -156,66 +176,80 @@ const Dashboard: React.FC = () => {
                   </TabsList>
                 </div>
 
-                <TabsContent value="all" className="mt-4">
-                  <ReservationsList 
-                    reservations={reservations}
-                    filter={filter}
-                    setFilter={setFilter}
-                    updateReservationStatus={updateReservationStatus}
-                    formatDate={formatDate}
-                    isLoading={isLoading}
-                  />
-                </TabsContent>
-                <TabsContent value="pending" className="mt-4">
-                  <ReservationsList 
-                    reservations={reservations}
-                    filter={filter}
-                    setFilter={setFilter}
-                    updateReservationStatus={updateReservationStatus}
-                    formatDate={formatDate}
-                    isLoading={isLoading}
-                  />
-                </TabsContent>
-                <TabsContent value="confirmed" className="mt-4">
-                  <ReservationsList 
-                    reservations={reservations}
-                    filter={filter}
-                    setFilter={setFilter}
-                    updateReservationStatus={updateReservationStatus}
-                    formatDate={formatDate}
-                    isLoading={isLoading}
-                  />
-                </TabsContent>
-                <TabsContent value="rejected" className="mt-4">
-                  <ReservationsList 
-                    reservations={reservations}
-                    filter={filter}
-                    setFilter={setFilter}
-                    updateReservationStatus={updateReservationStatus}
-                    formatDate={formatDate}
-                    isLoading={isLoading}
-                  />
-                </TabsContent>
-                <TabsContent value="completed" className="mt-4">
-                  <ReservationsList 
-                    reservations={reservations}
-                    filter={filter}
-                    setFilter={setFilter}
-                    updateReservationStatus={updateReservationStatus}
-                    formatDate={formatDate}
-                    isLoading={isLoading}
-                  />
-                </TabsContent>
-                <TabsContent value="cancelled" className="mt-4">
-                  <ReservationsList 
-                    reservations={reservations}
-                    filter={filter}
-                    setFilter={setFilter}
-                    updateReservationStatus={updateReservationStatus}
-                    formatDate={formatDate}
-                    isLoading={isLoading}
-                  />
-                </TabsContent>
+                {viewMode === 'cards' ? (
+                  <>
+                    <TabsContent value="all" className="mt-4">
+                      <ReservationsList 
+                        reservations={reservations}
+                        filter={filter}
+                        setFilter={setFilter}
+                        updateReservationStatus={updateReservationStatus}
+                        formatDate={formatDate}
+                        isLoading={isLoading}
+                      />
+                    </TabsContent>
+                    <TabsContent value="pending" className="mt-4">
+                      <ReservationsList 
+                        reservations={reservations}
+                        filter={filter}
+                        setFilter={setFilter}
+                        updateReservationStatus={updateReservationStatus}
+                        formatDate={formatDate}
+                        isLoading={isLoading}
+                      />
+                    </TabsContent>
+                    <TabsContent value="confirmed" className="mt-4">
+                      <ReservationsList 
+                        reservations={reservations}
+                        filter={filter}
+                        setFilter={setFilter}
+                        updateReservationStatus={updateReservationStatus}
+                        formatDate={formatDate}
+                        isLoading={isLoading}
+                      />
+                    </TabsContent>
+                    <TabsContent value="rejected" className="mt-4">
+                      <ReservationsList 
+                        reservations={reservations}
+                        filter={filter}
+                        setFilter={setFilter}
+                        updateReservationStatus={updateReservationStatus}
+                        formatDate={formatDate}
+                        isLoading={isLoading}
+                      />
+                    </TabsContent>
+                    <TabsContent value="completed" className="mt-4">
+                      <ReservationsList 
+                        reservations={reservations}
+                        filter={filter}
+                        setFilter={setFilter}
+                        updateReservationStatus={updateReservationStatus}
+                        formatDate={formatDate}
+                        isLoading={isLoading}
+                      />
+                    </TabsContent>
+                    <TabsContent value="cancelled" className="mt-4">
+                      <ReservationsList 
+                        reservations={reservations}
+                        filter={filter}
+                        setFilter={setFilter}
+                        updateReservationStatus={updateReservationStatus}
+                        formatDate={formatDate}
+                        isLoading={isLoading}
+                      />
+                    </TabsContent>
+                  </>
+                ) : (
+                  <TabsContent value={filter} className="mt-4">
+                    <ReservationsManager
+                      reservations={reservations}
+                      updateReservationStatus={updateReservationStatus}
+                      formatDate={formatDate}
+                      isLoading={isLoading}
+                      filter={filter}
+                    />
+                  </TabsContent>
+                )}
               </Tabs>
             </div>
           </div>

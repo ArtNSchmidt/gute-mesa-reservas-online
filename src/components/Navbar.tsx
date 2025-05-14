@@ -1,15 +1,19 @@
 
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Shield } from 'lucide-react';
 import { Button } from './ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const location = useLocation();
+  const { authState } = useAuth();
+  const isAdmin = authState.isAuthenticated && authState.admin;
+  const isAdminPage = location.pathname.startsWith('/admin');
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -54,11 +58,14 @@ const Navbar = () => {
   ];
 
   return (
-    <header className="bg-restaurant-dark-wine py-4 text-white sticky top-0 z-50">
+    <header className={`py-4 text-white sticky top-0 z-50 ${isAdminPage ? 'bg-restaurant-forest-green' : 'bg-restaurant-dark-wine'}`}>
       <div className="container mx-auto flex justify-between items-center px-4">
         <Link to="/" className="flex items-center">
+          {isAdmin && (
+            <Shield size={20} className="mr-2 text-restaurant-lime-green" />
+          )}
           <span className="text-xl md:text-2xl font-playfair font-bold text-restaurant-lime-green">
-            Taberna do Gute
+            {isAdminPage ? 'Painel Admin - Taberna do Gute' : 'Taberna do Gute'}
           </span>
         </Link>
 
@@ -76,7 +83,7 @@ const Navbar = () => {
             {isMenuOpen && (
               <div className="fixed top-16 left-0 right-0 bg-restaurant-dark-wine p-4 animate-slide-in">
                 <nav className="flex flex-col space-y-4">
-                  {navItems.map((item, index) => (
+                  {!isAdminPage && navItems.map((item, index) => (
                     <a 
                       key={index}
                       href={item.href}
@@ -86,20 +93,31 @@ const Navbar = () => {
                       {item.text}
                     </a>
                   ))}
-                  <a 
-                    href="#reservation" 
-                    className="text-white hover:text-restaurant-lime-green py-2 border-b border-restaurant-forest-green/30"
-                    onClick={(e) => scrollToSection('reservation', e)}
-                  >
-                    Reservar Mesa
-                  </a>
+                  {isAdmin && (
+                    <Link
+                      to="/admin/dashboard"
+                      className="text-white hover:text-restaurant-lime-green py-2 border-b border-restaurant-forest-green/30"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Dashboard Admin
+                    </Link>
+                  )}
+                  {!isAdminPage && (
+                    <a 
+                      href="#reservation" 
+                      className="text-white hover:text-restaurant-lime-green py-2 border-b border-restaurant-forest-green/30"
+                      onClick={(e) => scrollToSection('reservation', e)}
+                    >
+                      Reservar Mesa
+                    </a>
+                  )}
                 </nav>
               </div>
             )}
           </>
         ) : (
           <nav className="hidden md:flex items-center space-x-8">
-            {navItems.map((item, index) => (
+            {!isAdminPage && navItems.map((item, index) => (
               item.isScroll ? (
                 <a
                   key={index}
@@ -119,12 +137,23 @@ const Navbar = () => {
                 </Link>
               )
             ))}
-            <Button 
-              className="bg-restaurant-lime-green hover:bg-restaurant-light-green text-restaurant-dark-wine hover:text-restaurant-dark-wine font-medium"
-              onClick={(e) => scrollToSection('reservation', e)}
-            >
-              Reservar Mesa
-            </Button>
+            {isAdmin && (
+              <Link 
+                to="/admin/dashboard" 
+                className="flex items-center text-white hover:text-restaurant-lime-green transition-colors"
+              >
+                <Shield size={16} className="mr-1" />
+                <span>Dashboard Admin</span>
+              </Link>
+            )}
+            {!isAdminPage && (
+              <Button 
+                className="bg-restaurant-lime-green hover:bg-restaurant-light-green text-restaurant-dark-wine hover:text-restaurant-dark-wine font-medium"
+                onClick={(e) => scrollToSection('reservation', e)}
+              >
+                Reservar Mesa
+              </Button>
+            )}
           </nav>
         )}
       </div>
