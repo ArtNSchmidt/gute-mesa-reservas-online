@@ -5,7 +5,7 @@ import { toast } from '@/components/ui/use-toast';
 import { User } from '@supabase/supabase-js';
 
 /**
- * Verifies if a user ID belongs to an admin and returns admin data
+ * Verifica se um ID de usuário pertence a um administrador e retorna os dados do admin
  */
 export const verifyAdminAndGetData = async (userId: string): Promise<Admin | null> => {
   try {
@@ -16,11 +16,44 @@ export const verifyAdminAndGetData = async (userId: string): Promise<Admin | nul
       .eq('id', userId)
       .maybeSingle();
       
-    if (profileError) throw profileError;
+    if (profileError) {
+      console.error('Erro ao verificar perfil:', profileError);
+      throw profileError;
+    }
     
-    if (profileData && profileData.role === 'admin') {
+    // Se não encontrou perfil, tenta criar um perfil admin
+    if (!profileData) {
+      const { data: userData, error: userError } = await supabase.auth.admin.getUserById(userId);
+      
+      if (userError || !userData.user) {
+        console.error('Usuário não encontrado:', userError);
+        return null;
+      }
+      
+      // Criar perfil para o usuário
+      const { error: insertError } = await supabase
+        .from('profiles')
+        .insert({
+          id: userId,
+          email: userData.user.email,
+          name: 'Administrador',
+          role: 'admin'
+        });
+        
+      if (insertError) {
+        console.error('Erro ao criar perfil:', insertError);
+        return null;
+      }
+      
       return {
-        email: profileData.email,
+        email: userData.user.email || '',
+        name: 'Administrador'
+      };
+    }
+    
+    if (profileData.role === 'admin') {
+      return {
+        email: profileData.email || '',
         name: profileData.name || 'Administrador'
       };
     }
@@ -33,7 +66,7 @@ export const verifyAdminAndGetData = async (userId: string): Promise<Admin | nul
 };
 
 /**
- * Creates a new admin user
+ * Cria um novo usuário administrador
  */
 export const createAdminUser = async (email: string, password?: string): Promise<string | null> => {
   try {

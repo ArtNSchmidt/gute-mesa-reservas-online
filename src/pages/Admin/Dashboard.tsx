@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -20,13 +19,26 @@ const Dashboard: React.FC = () => {
   const [filter, setFilter] = useState<'all' | 'pending' | 'confirmed' | 'rejected' | 'completed' | 'cancelled'>('all');
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
   const [isLoading, setIsLoading] = useState(true);
+  const [redirecting, setRedirecting] = useState(false);
 
+  // Esse useEffect controla o redirecionamento
   useEffect(() => {
-    if (!authState.isLoading && !authState.isAuthenticated) {
-      navigate('/admin/login');
+    // Só redirecionar se não estiver autenticado E já passou do estado de carregamento
+    // E ainda não estamos no processo de redirecionamento
+    if (!authState.isLoading && !authState.isAuthenticated && !redirecting) {
+      console.log("Redirecionando para login: não autenticado e carregamento finalizado");
+      setRedirecting(true);
+      
+      // Pequeno delay para evitar loops de redirecionamento
+      const timer = setTimeout(() => {
+        navigate('/admin/login');
+      }, 100);
+      
+      return () => clearTimeout(timer);
     }
-  }, [authState.isAuthenticated, authState.isLoading, navigate]);
+  }, [authState.isAuthenticated, authState.isLoading, navigate, redirecting]);
 
+  // Esse useEffect carrega as reservas quando o usuário está autenticado
   useEffect(() => {
     const fetchReservations = async () => {
       if (!authState.isAuthenticated) return;
@@ -55,7 +67,9 @@ const Dashboard: React.FC = () => {
       }
     };
 
-    fetchReservations();
+    if (authState.isAuthenticated) {
+      fetchReservations();
+    }
   }, [authState.isAuthenticated]);
 
   const updateReservationStatus = async (id: string, status: 'confirmed' | 'rejected' | 'completed') => {
@@ -101,12 +115,34 @@ const Dashboard: React.FC = () => {
     return date.toLocaleDateString('pt-BR');
   };
 
+  // Mostrar tela de carregamento enquanto verifica a autenticação
   if (authState.isLoading) {
     return (
       <div className="min-h-screen flex flex-col">
         <Navbar />
         <div className="flex-1 py-12 bg-gray-50 flex items-center justify-center">
           <p>Carregando...</p>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Se não estiver autenticado mas ainda não foi redirecionado, mostrar mensagem
+  if (!authState.isAuthenticated && !redirecting) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <div className="flex-1 py-12 bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-xl mb-4">Você não está autenticado.</p>
+            <Button 
+              onClick={() => navigate('/admin/login')}
+              className="bg-restaurant-forest-green"
+            >
+              Ir para o Login
+            </Button>
+          </div>
         </div>
         <Footer />
       </div>

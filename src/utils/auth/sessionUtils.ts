@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 
 /**
- * Handles login with email and password
+ * Gerencia login com email e senha
  */
 export const handleLogin = async (email: string, password: string): Promise<void> => {
   try {
@@ -35,11 +35,12 @@ export const handleLogin = async (email: string, password: string): Promise<void
 };
 
 /**
- * Handles logout functionality
+ * Gerencia a funcionalidade de logout
  */
 export const handleLogout = async (): Promise<boolean> => {
   try {
-    await supabase.auth.signOut();
+    // Usar signOut sem parâmetros para fazer logout apenas da sessão atual
+    await supabase.auth.signOut({ scope: 'local' });
     
     toast({
       title: "Logout realizado",

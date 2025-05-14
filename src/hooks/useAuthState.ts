@@ -6,7 +6,7 @@ import { verifyAdminAndGetData } from '@/utils/auth';
 import { toast } from '@/components/ui/use-toast';
 
 /**
- * Hook to manage authentication state with Supabase
+ * Hook para gerenciar o estado de autenticação com Supabase
  */
 export const useAuthState = () => {
   const [authState, setAuthState] = useState<AuthState>({
@@ -17,23 +17,39 @@ export const useAuthState = () => {
 
   // Verificar sessão ao carregar
   useEffect(() => {
+    let isMounted = true;
+    
     const checkSession = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         
-        if (session) {
-          const admin = await verifyAdminAndGetData(session.user.id);
-          
-          if (admin) {
+        if (!session) {
+          if (isMounted) {
+            setAuthState({
+              admin: null,
+              isAuthenticated: false,
+              isLoading: false
+            });
+          }
+          return;
+        }
+        
+        // Se tem sessão, verificar se é admin
+        const admin = await verifyAdminAndGetData(session.user.id);
+        
+        if (admin) {
+          if (isMounted) {
             setAuthState({
               admin,
               isAuthenticated: true,
               isLoading: false
             });
-          } else {
-            // Se não for admin, deslogar
-            await supabase.auth.signOut();
-            
+          }
+        } else {
+          // Se não for admin, deslogar mas sem redirecionamento automático
+          await supabase.auth.signOut();
+          
+          if (isMounted) {
             toast({
               title: "Acesso negado",
               description: "Você não tem permissão para acessar o painel administrativo.",
@@ -46,20 +62,16 @@ export const useAuthState = () => {
               isLoading: false
             });
           }
-        } else {
+        }
+      } catch (error) {
+        console.error('Erro ao verificar sessão:', error);
+        if (isMounted) {
           setAuthState({
             admin: null,
             isAuthenticated: false,
             isLoading: false
           });
         }
-      } catch (error) {
-        console.error('Erro ao verificar sessão:', error);
-        setAuthState({
-          admin: null,
-          isAuthenticated: false,
-          isLoading: false
-        });
       }
     };
     
@@ -70,14 +82,24 @@ export const useAuthState = () => {
       (event, session) => {
         console.log('Auth state changed:', event, session);
         
+        if (!isMounted) return;
+        
         // Importante: não fazer operações assíncronas diretamente no callback
-        // para evitar deadlocks no sistema de eventos do Supabase
-        setAuthState(prev => ({ ...prev, isLoading: true }));
+        if (event === 'SIGNED_OUT') {
+          setAuthState({
+            admin: null,
+            isAuthenticated: false,
+            isLoading: false
+          });
+          return;
+        }
         
         if (session) {
           // Usar setTimeout para evitar deadlocks nos eventos de autenticação
-          setTimeout(() => {
-            const checkAdmin = async () => {
+          setTimeout(async () => {
+            if (!isMounted) return;
+            
+            try {
               const admin = await verifyAdminAndGetData(session.user.id);
               
               if (admin) {
@@ -87,36 +109,29 @@ export const useAuthState = () => {
                   isLoading: false
                 });
               } else {
-                // Se não for admin, deslogar
-                await supabase.auth.signOut();
-                
-                toast({
-                  title: "Acesso negado",
-                  description: "Você não tem permissão para acessar o painel administrativo.",
-                  variant: "destructive"
-                });
-                
+                // Se não for admin, não fazer logout automático aqui
+                // para evitar loops. Apenas atualizar o estado.
                 setAuthState({
                   admin: null,
                   isAuthenticated: false,
                   isLoading: false
                 });
               }
-            };
-            
-            checkAdmin();
+            } catch (error) {
+              console.error('Erro ao verificar admin:', error);
+              setAuthState({
+                admin: null,
+                isAuthenticated: false,
+                isLoading: false
+              });
+            }
           }, 0);
-        } else {
-          setAuthState({
-            admin: null,
-            isAuthenticated: false,
-            isLoading: false
-          });
         }
       }
     );
     
     return () => {
+      isMounted = false;
       subscription.unsubscribe();
     };
   }, []);
