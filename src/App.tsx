@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
+import Menu from "./pages/Menu";
 import Confirmation from "./pages/Confirmation";
 import Login from "./pages/Admin/Login";
 import Dashboard from "./pages/Admin/Dashboard";
@@ -23,6 +24,7 @@ const App = () => (
           <Sonner />
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/menu" element={<Menu />} />
             <Route path="/confirmation/:id" element={<Confirmation />} />
             <Route path="/admin/login" element={<Login />} />
             <Route path="/admin/dashboard" element={<Dashboard />} />
