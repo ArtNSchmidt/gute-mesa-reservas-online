@@ -28,10 +28,22 @@ export const adminSupabase = createClient<Database>(SUPABASE_URL, SUPABASE_SERVI
   }
 });
 
-// Estender o cliente supabase com funções administrativas
-// Isso é uma abordagem simplificada para fins de demonstração
-// Em produção, estas operações devem ser realizadas em edge functions
-supabase.auth.admin = {
+// Definir o tipo para as funções administrativas que queremos disponibilizar
+// Isso resolve o erro de tipo usando uma extensão de interface
+declare module '@supabase/supabase-js' {
+  interface SupabaseClient {
+    // Estamos adicionando uma propriedade customizada 'adminFunctions' em vez de modificar a propriedade 'admin' existente
+    adminFunctions: {
+      createUser: (options: any) => Promise<any>;
+      getUserById: (id: string) => Promise<any>;
+      listUsers: () => Promise<any>;
+    }
+  }
+}
+
+// Adicionar as funções administrativas como uma propriedade separada da interface
+// em vez de sobrescrever o objeto auth.admin
+supabase.adminFunctions = {
   createUser: async (options: any) => {
     return await adminSupabase.auth.admin.createUser(options);
   },

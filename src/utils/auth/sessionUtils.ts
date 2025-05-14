@@ -3,58 +3,67 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 
 /**
- * Gerencia login com email e senha
+ * Realiza o login do usuário com email e senha
  */
-export const handleLogin = async (email: string, password: string): Promise<void> => {
+export const handleLogin = async (email: string, password: string): Promise<boolean> => {
   try {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password
     });
-    
-    if (error) throw error;
-    
-    if (data.user) {
-      toast({
-        title: "Login realizado com sucesso",
-        description: "Bem-vindo ao painel administrativo.",
-      });
+
+    if (error) {
+      console.error('Login error:', error);
+      throw error;
     }
+    
+    console.log('Login successful:', data.user?.id);
+    
+    toast({
+      title: "Login realizado com sucesso",
+      description: "Você será redirecionado para o painel administrativo.",
+    });
+    
+    return true;
   } catch (error: any) {
     console.error('Login error:', error);
     
-    // Traduzir mensagens de erro comuns do Supabase
-    if (error.message?.includes('Invalid login credentials')) {
-      throw new Error('Credenciais inválidas. Verifique seu email e senha.');
-    } else if (error.message?.includes('Email not confirmed')) {
-      throw new Error('Email não confirmado. Verifique sua caixa de entrada para confirmar seu email.');
-    } else {
-      throw error;
+    // Tratar erros comuns
+    if (error.message) {
+      if (error.message.includes('Invalid login credentials')) {
+        throw new Error('Email ou senha inválidos. Verifique suas credenciais e tente novamente.');
+      }
+      else if (error.message.includes('Email not confirmed')) {
+        throw new Error('Email não confirmado. Por favor, verifique seu email e confirme sua conta.');
+      }
     }
+    
+    throw error;
   }
 };
 
 /**
- * Gerencia a funcionalidade de logout
+ * Realiza o logout do usuário
  */
 export const handleLogout = async (): Promise<boolean> => {
   try {
-    // Usar signOut sem parâmetros para fazer logout apenas da sessão atual
-    await supabase.auth.signOut({ scope: 'local' });
+    const { error } = await supabase.auth.signOut();
+    
+    if (error) {
+      console.error('Logout error:', error);
+      throw error;
+    }
+    
+    console.log('Logout successful');
     
     toast({
-      title: "Logout realizado",
-      description: "Você foi desconectado com sucesso.",
+      title: "Logout realizado com sucesso",
+      description: "Você foi desconectado do sistema.",
     });
     
     return true;
   } catch (error) {
-    console.error('Logout failed:', error);
-    toast({
-      variant: "destructive",
-      title: "Erro ao sair",
-      description: "Não foi possível realizar o logout. Por favor, tente novamente.",
-    });
-    return false;
+    console.error('Logout error:', error);
+    throw error;
   }
 };

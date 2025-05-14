@@ -47,7 +47,8 @@ export const createAdminUser = async (email: string, password?: string): Promise
     console.log("Iniciando criação de administrador com email:", email);
     
     // Criar o usuário diretamente sem enviar email de confirmação
-    const { data, error: signUpError } = await supabase.auth.admin.createUser({
+    // Usando adminFunctions em vez de auth.admin
+    const { data, error: signUpError } = await supabase.adminFunctions.createUser({
       email,
       password: adminPassword,
       email_confirm: true,
