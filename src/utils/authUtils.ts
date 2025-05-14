@@ -66,13 +66,21 @@ export const createAdminUser = async (email: string, password?: string): Promise
     console.log("Iniciando criação de administrador com email:", email);
     
     // Verificar se o email já está registrado
-    const { data: existingUser } = await supabase.auth.admin.listUsers({
-      filter: {
-        email: email
-      }
+    // Corrigindo o método para verificar usuários existentes
+    const { data: existingUsers, error: listError } = await supabase.auth.admin.listUsers({
+      page: 1,
+      perPage: 1,
     });
     
-    if (existingUser && existingUser.users.length > 0) {
+    // Procurar pelo usuário com o email correspondente
+    const existingUser = existingUsers?.users.find(user => user.email === email);
+    
+    if (listError) {
+      console.error("Erro ao verificar usuários existentes:", listError);
+      throw listError;
+    }
+    
+    if (existingUser) {
       console.log("Usuário já existe, enviando novo email de confirmação");
       
       // Se o usuário já existe, enviar um novo email de confirmação
