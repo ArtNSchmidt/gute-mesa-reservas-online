@@ -13,12 +13,14 @@ import Dashboard from "./pages/Admin/Dashboard";
 import CreateAdmin from "./pages/Admin/CreateAdmin";
 import InitializeAdmin from "./pages/Admin/InitializeAdmin";
 import NotFound from "./pages/NotFound";
+import ScrollToTop from "./components/ScrollToTop";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <BrowserRouter>
+      <ScrollToTop />
       <AuthProvider>
         <TooltipProvider>
           <Toaster />
