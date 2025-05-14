@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { UserPlus } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 const CreateAdmin: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -17,6 +18,23 @@ const CreateAdmin: React.FC = () => {
   const [name, setName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { authState } = useAuth();
+
+  // Verificar se o usuário está autenticado e é um administrador
+  useEffect(() => {
+    // Se ainda estiver carregando a autenticação, aguarde
+    if (authState.isLoading) return;
+    
+    // Se não estiver autenticado OU não for admin, redirecione para login
+    if (!authState.isAuthenticated || !authState.admin) {
+      toast({
+        title: "Acesso negado",
+        description: "Apenas administradores podem criar novos administradores.",
+        variant: "destructive"
+      });
+      navigate('/admin/login');
+    }
+  }, [authState.isAuthenticated, authState.isLoading, authState.admin, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,10 +76,10 @@ const CreateAdmin: React.FC = () => {
       
       toast({
         title: "Administrador criado com sucesso",
-        description: "Você pode fazer login agora com as credenciais criadas.",
+        description: "O novo administrador pode fazer login com as credenciais criadas.",
       });
       
-      navigate('/admin/login');
+      navigate('/admin/dashboard');
     } catch (error: any) {
       console.error('Erro ao criar admin:', error);
       
@@ -74,6 +92,19 @@ const CreateAdmin: React.FC = () => {
       setIsLoading(false);
     }
   };
+
+  // Se estiver carregando a autenticação, mostra um indicador de carregamento
+  if (authState.isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gradient-to-b from-white to-gray-100">
+        <Navbar />
+        <div className="flex-1 flex items-center justify-center p-4">
+          <p>Verificando permissões...</p>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-white to-gray-100">
@@ -141,10 +172,10 @@ const CreateAdmin: React.FC = () => {
             <div className="mt-4 text-center">
               <Button 
                 variant="link" 
-                onClick={() => navigate('/admin/login')}
+                onClick={() => navigate('/admin/dashboard')}
                 className="text-restaurant-forest-green hover:text-restaurant-dark-wine"
               >
-                Voltar para login
+                Voltar para o painel
               </Button>
             </div>
           </CardContent>

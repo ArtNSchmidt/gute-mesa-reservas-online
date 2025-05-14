@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { toast } from '@/components/ui/use-toast';
-import { Eye, EyeOff, LogIn, UserPlus } from 'lucide-react';
+import { Eye, EyeOff, LogIn } from 'lucide-react';
 
 const Login: React.FC = () => {
   const { login, authState } = useAuth();
@@ -109,17 +109,8 @@ const Login: React.FC = () => {
                 {isLoading ? 'Carregando...' : 'Entrar'}
               </Button>
             </form>
-            <div className="mt-6 text-center space-y-4">
+            <div className="mt-6 text-center">
               <p className="text-sm text-gray-500">Acesso restrito apenas para administradores.</p>
-              
-              <Button 
-                variant="outline" 
-                className="flex items-center gap-2 mx-auto border-restaurant-forest-green text-restaurant-forest-green hover:bg-restaurant-forest-green/10"
-                onClick={() => navigate('/admin/create-admin')}
-              >
-                <UserPlus size={16} />
-                Criar novo administrador
-              </Button>
             </div>
           </CardContent>
         </Card>

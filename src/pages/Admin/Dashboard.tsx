@@ -9,6 +9,8 @@ import Footer from '@/components/Footer';
 import { toast } from '@/components/ui/use-toast';
 import ReservationsList from '@/components/admin/ReservationsList';
 import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { LogOut, UserPlus } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
   const { authState, logout } = useAuth();
@@ -121,13 +123,22 @@ const Dashboard: React.FC = () => {
                 Bem-vindo, {authState.admin?.name || 'Administrador'}. Gerencie as reservas do restaurante.
               </p>
             </div>
-            <Button 
-              onClick={() => logout()} 
-              variant="outline" 
-              className="border-restaurant-dark-wine text-restaurant-dark-wine hover:bg-restaurant-dark-wine/10"
-            >
-              <LogOut className="mr-2 h-4 w-4" /> Sair
-            </Button>
+            <div className="flex space-x-4">
+              <Button 
+                onClick={() => navigate('/admin/create-admin')} 
+                variant="outline" 
+                className="border-restaurant-forest-green text-restaurant-forest-green hover:bg-restaurant-forest-green/10"
+              >
+                <UserPlus className="mr-2 h-4 w-4" /> Novo Admin
+              </Button>
+              <Button 
+                onClick={() => logout()} 
+                variant="outline" 
+                className="border-restaurant-dark-wine text-restaurant-dark-wine hover:bg-restaurant-dark-wine/10"
+              >
+                <LogOut className="mr-2 h-4 w-4" /> Sair
+              </Button>
+            </div>
           </header>
 
           <div className="bg-white shadow-md rounded-lg p-6">
@@ -214,9 +225,5 @@ const Dashboard: React.FC = () => {
     </div>
   );
 };
-
-// Preciso importar o componente Button e o ícone LogOut
-import { Button } from '@/components/ui/button';
-import { LogOut } from 'lucide-react';
 
 export default Dashboard;
