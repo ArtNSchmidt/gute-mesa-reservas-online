@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ShieldCheck, Loader2 } from 'lucide-react';
+import { ShieldCheck, Loader2, CheckCircle } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
@@ -15,6 +15,7 @@ const InitializeAdmin: React.FC = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [isCreated, setIsCreated] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [emailSent, setEmailSent] = useState(false);
   
   const adminEmail = "arturnogschmidt1@hotmail.com";
   
@@ -28,11 +29,11 @@ const InitializeAdmin: React.FC = () => {
       await createAdmin(adminEmail);
       console.log("Administrador criado com sucesso");
       
-      setIsCreated(true);
+      setEmailSent(true);
       
       toast({
         title: "Email de confirmação enviado",
-        description: "Verifique sua caixa de entrada para completar a criação do administrador.",
+        description: "Verifique sua caixa de entrada e pasta de spam para completar a criação do administrador.",
         variant: "default",
       });
     } catch (err: any) {
@@ -71,6 +72,25 @@ const InitializeAdmin: React.FC = () => {
                   </div>
                   <p className="mt-4">Enviando email de confirmação...</p>
                 </div>
+              ) : emailSent ? (
+                <div className="space-y-4">
+                  <Alert className="bg-green-50 border-green-200 text-green-800">
+                    <CheckCircle className="h-5 w-5 text-green-600" />
+                    <AlertTitle>Email enviado com sucesso</AlertTitle>
+                    <AlertDescription>
+                      Um email de confirmação foi enviado para {adminEmail}. 
+                      Verifique sua caixa de entrada e a pasta de spam para completar o registro.
+                    </AlertDescription>
+                  </Alert>
+                  <div className="text-center">
+                    <Button 
+                      onClick={() => setIsCreated(true)}
+                      className="bg-restaurant-light-green hover:bg-restaurant-forest-green"
+                    >
+                      Ir para página de login
+                    </Button>
+                  </div>
+                </div>
               ) : error ? (
                 <div className="space-y-4">
                   <Alert className="bg-red-50 border-red-200 text-red-800">
@@ -95,13 +115,13 @@ const InitializeAdmin: React.FC = () => {
                     {adminEmail}
                   </p>
                   <p className="text-sm text-gray-600">
-                    Um email de confirmação será enviado para este endereço. Verifique sua caixa de entrada após a criação.
+                    Um email de confirmação será enviado para este endereço. Verifique sua caixa de entrada e pasta de spam após a criação.
                   </p>
                   <Button 
                     onClick={initializeAdmin}
                     className="w-full bg-restaurant-light-green hover:bg-restaurant-forest-green"
                   >
-                    Criar Administrador
+                    Criar Administrador e Enviar Email
                   </Button>
                 </div>
               )}

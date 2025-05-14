@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { User, ShieldCheck, AlertCircle, Loader2 } from 'lucide-react';
+import { User, ShieldCheck, AlertCircle, Loader2, CheckCircle } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/contexts/AuthContext';
@@ -21,6 +21,7 @@ const Login: React.FC = () => {
   const [isCreatingAdmin, setIsCreatingAdmin] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
   const [adminError, setAdminError] = useState<string | null>(null);
+  const [emailSent, setEmailSent] = useState(false);
   
   const { login, createAdmin, authState } = useAuth();
   const { toast } = useToast();
@@ -54,17 +55,18 @@ const Login: React.FC = () => {
     e.preventDefault();
     setAdminError(null);
     setIsCreatingAdmin(true);
+    setEmailSent(false);
     
     try {
       await createAdmin(newAdminEmail);
       
+      setEmailSent(true);
       toast({
         title: "Email de confirmação enviado",
-        description: `Um email de confirmação foi enviado para ${newAdminEmail}. Verifique a caixa de entrada.`,
+        description: `Um email de confirmação foi enviado para ${newAdminEmail}. Verifique também a pasta de spam.`,
       });
       
-      setShowAdminDialog(false);
-      setNewAdminEmail('');
+      // Não fechamos o diálogo automaticamente para mostrar a mensagem de sucesso
     } catch (error: any) {
       console.error('Failed to create admin:', error);
       setAdminError(error.message || 'Falha ao criar administrador.');
@@ -140,7 +142,14 @@ const Login: React.FC = () => {
 
             {/* Admin initialization */}
             <div className="mt-6 text-center border-t border-gray-200 pt-4">
-              <Dialog open={showAdminDialog} onOpenChange={setShowAdminDialog}>
+              <Dialog open={showAdminDialog} onOpenChange={(open) => {
+                setShowAdminDialog(open);
+                if (!open) {
+                  setEmailSent(false);
+                  setNewAdminEmail('');
+                  setAdminError(null);
+                }
+              }}>
                 <DialogTrigger asChild>
                   <Button variant="outline" className="text-restaurant-forest-green hover:text-restaurant-dark-wine flex items-center gap-2">
                     <ShieldCheck size={16} />
@@ -156,12 +165,21 @@ const Login: React.FC = () => {
                     </DialogDescription>
                   </DialogHeader>
                   <form onSubmit={handleCreateAdmin} className="space-y-4 py-4">
-                    {adminError && (
+                    {emailSent ? (
+                      <Alert className="bg-green-50 border-green-200 text-green-800">
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <AlertDescription>
+                          Email de confirmação enviado com sucesso para {newAdminEmail}. 
+                          Por favor, verifique sua caixa de entrada e a pasta de spam.
+                        </AlertDescription>
+                      </Alert>
+                    ) : adminError ? (
                       <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-800">
                         <AlertCircle className="h-4 w-4 text-red-600" />
                         <AlertDescription>{adminError}</AlertDescription>
                       </Alert>
-                    )}
+                    ) : null}
+                    
                     <div className="space-y-2">
                       <Label htmlFor="newAdminEmail">Email do Administrador</Label>
                       <Input
@@ -171,22 +189,46 @@ const Login: React.FC = () => {
                         onChange={(e) => setNewAdminEmail(e.target.value)}
                         placeholder="admin@exemplo.com"
                         required
-                        disabled={isCreatingAdmin}
+                        disabled={isCreatingAdmin || emailSent}
                       />
                     </div>
-                    <DialogFooter>
-                      <Button 
-                        type="submit" 
-                        disabled={isCreatingAdmin}
-                        className="w-full bg-restaurant-forest-green text-white"
-                      >
-                        {isCreatingAdmin ? (
-                          <span className="flex items-center gap-2">
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            Enviando...
-                          </span>
-                        ) : 'Enviar Confirmação'}
-                      </Button>
+                    
+                    <DialogFooter className="flex flex-col sm:flex-row gap-2">
+                      {emailSent ? (
+                        <>
+                          <Button 
+                            type="button" 
+                            variant="outline"
+                            onClick={() => setShowAdminDialog(false)}
+                            className="w-full"
+                          >
+                            Fechar
+                          </Button>
+                          <Button 
+                            type="button"
+                            onClick={() => {
+                              setEmailSent(false);
+                              setNewAdminEmail('');
+                            }}
+                            className="w-full bg-restaurant-forest-green text-white"
+                          >
+                            Enviar para outro email
+                          </Button>
+                        </>
+                      ) : (
+                        <Button 
+                          type="submit" 
+                          disabled={isCreatingAdmin}
+                          className="w-full bg-restaurant-forest-green text-white"
+                        >
+                          {isCreatingAdmin ? (
+                            <span className="flex items-center gap-2">
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                              Enviando...
+                            </span>
+                          ) : 'Enviar Confirmação'}
+                        </Button>
+                      )}
                     </DialogFooter>
                   </form>
                 </DialogContent>

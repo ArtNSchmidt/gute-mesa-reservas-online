@@ -65,6 +65,32 @@ export const createAdminUser = async (email: string, password?: string): Promise
     
     console.log("Iniciando criação de administrador com email:", email);
     
+    // Verificar se o email já está registrado
+    const { data: existingUser } = await supabase.auth.admin.listUsers({
+      filter: {
+        email: email
+      }
+    });
+    
+    if (existingUser && existingUser.users.length > 0) {
+      console.log("Usuário já existe, enviando novo email de confirmação");
+      
+      // Se o usuário já existe, enviar um novo email de confirmação
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: email
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Email de confirmação reenviado",
+        description: `Um novo email de confirmação foi enviado para ${email}. Verifique também a pasta de spam.`,
+      });
+      
+      return null;
+    }
+    
     // Criar o usuário com signup, isso enviará um email de confirmação
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email,
@@ -78,10 +104,9 @@ export const createAdminUser = async (email: string, password?: string): Promise
     });
     
     if (signUpError) {
-      // Traduzir mensagens de erro comuns
       console.error("Erro no signup:", signUpError);
       if (signUpError.message?.includes('User already registered')) {
-        throw new Error('Este email já está registrado no sistema.');
+        throw new Error('Este email já está registrado no sistema. Verifique seu email para confirmar a conta ou tente recuperar a senha.');
       }
       throw signUpError;
     }
@@ -108,6 +133,18 @@ export const createAdminUser = async (email: string, password?: string): Promise
     }
     
     console.log("Perfil atualizado com sucesso");
+    
+    // Enviar um email de confirmação manualmente (mesmo que o Supabase já tenha enviado um)
+    // para garantir que o email chegue
+    await supabase.auth.resend({
+      type: 'signup',
+      email: email,
+    });
+    
+    toast({
+      title: "Email de confirmação enviado",
+      description: `Um email de confirmação foi enviado para ${email}. Verifique também a pasta de spam.`,
+    });
     
     // Retornar a senha gerada, para caso a confirmação de email esteja desativada
     return adminPassword;
