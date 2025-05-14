@@ -113,12 +113,8 @@ const Menu = () => {
             />
           </MenuSection>
           
-          {/* Bebidas */}
+          {/* Bebidas - Apenas Sucos */}
           <MenuSection title="Bebidas">
-            <MenuItem title="ÁGUA MINERAL" />
-            <MenuItem title="ÁGUA COM GÁS" />
-            <MenuItem title="REFRIGERANTE KS" />
-            <MenuItem title="REFRIGERANTE LATA" />
             <MenuItem 
               title="SUCO NATURAL" 
               description="Limão, Manga, Melancia, Goiaba, Caju, Tamarindo (Disponível: Jarra / Copo)"
@@ -133,7 +129,7 @@ const Menu = () => {
             />
           </MenuSection>
           
-          {/* Bebidas Alcoólicas */}
+          {/* Bebidas Alcoólicas - Apenas cervejas 600ml e mantendo o resto exceto cervejas 350ml */}
           <MenuSection title="Bebidas Alcoólicas">
             <MenuItem title="HEINEKEN (600ML)" />
             <MenuItem title="STELLA ARTOIS (600ML)" />
@@ -141,19 +137,8 @@ const Menu = () => {
             <MenuItem title="CAIPIRINHA" />
             <MenuItem title="CAIPIROSKA" />
             <MenuItem title="CUBA-LIBRE (RUM COLA)" />
-            <MenuItem title="HEINEKEN (350ML)" />
-            <MenuItem title="SPATTEN (350ML)" />
-            <MenuItem title="STELLA (350ML)" />
             <MenuItem title="CACHAÇA (DOSE)" />
           </MenuSection>
-          
-          {/* Contato */}
-          <div className="text-center mt-20 mb-8 py-8 border-t border-b border-neutral-200">
-            <h3 className="text-2xl font-playfair font-medium text-neutral-800 mb-3">CONTATO PARA RESERVA</h3>
-            <p className="text-lg">(85) 9 9815-3884</p>
-            <p className="text-lg">(85) 9 8148-2382</p>
-            <p className="mt-3 text-neutral-600">@tabernadogute</p>
-          </div>
         </div>
       </div>
       <Footer />
