@@ -15,19 +15,24 @@ const Navbar = () => {
 
   const scrollToSection = (sectionId: string, event: React.MouseEvent) => {
     event.preventDefault();
-    const section = document.getElementById(sectionId);
-    if (section) {
-      section.scrollIntoView({ behavior: 'smooth' });
-      if (isMenuOpen) setIsMenuOpen(false);
+    
+    if (sectionId === 'top') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      const section = document.getElementById(sectionId);
+      if (section) {
+        section.scrollIntoView({ behavior: 'smooth' });
+      }
     }
+    
+    if (isMenuOpen) setIsMenuOpen(false);
   };
 
   const navItems = [
-    { text: 'Início', href: '/', isScroll: false },
+    { text: 'Início', href: '#top', isScroll: true },
     { text: 'Cardápio', href: '/menu', isScroll: false },
     { text: 'Sobre', href: '#about', isScroll: true },
     { text: 'Galeria', href: '#gallery', isScroll: true },
-    { text: 'Reservas', href: '#reservations', isScroll: true },
   ];
 
   return (
