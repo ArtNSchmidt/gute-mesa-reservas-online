@@ -15,24 +15,21 @@ const InitializeAdmin: React.FC = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [isCreated, setIsCreated] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showPassword, setShowPassword] = useState<string | null>(null);
-
+  
   const adminEmail = "arturnogschmidt1@hotmail.com";
   
   const initializeAdmin = async () => {
     setIsCreating(true);
     setError(null);
-    setShowPassword(null);
     
     try {
-      // Cria o admin e recebe a senha gerada
-      const password = await createAdmin(adminEmail);
-      setShowPassword(password);
+      // Cria o admin e envia email de confirmação
+      await createAdmin(adminEmail);
       setIsCreated(true);
       
       toast({
-        title: "Administrador criado com sucesso",
-        description: "Salve a senha fornecida para fazer login",
+        title: "Email de confirmação enviado",
+        description: "Verifique sua caixa de entrada para completar a criação do administrador.",
         variant: "default",
       });
     } catch (err: any) {
@@ -49,8 +46,8 @@ const InitializeAdmin: React.FC = () => {
     }
   };
 
-  // Se criado com sucesso e o usuário fechou a visualização da senha, redireciona para login
-  if (isCreated && !showPassword) {
+  // Se criado com sucesso, redireciona para login
+  if (isCreated) {
     return <Navigate to="/admin/login" />;
   }
 
@@ -73,26 +70,7 @@ const InitializeAdmin: React.FC = () => {
               {isCreating ? (
                 <div className="text-center py-8">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-restaurant-forest-green mx-auto"></div>
-                  <p className="mt-4">Criando administrador...</p>
-                </div>
-              ) : showPassword ? (
-                <div className="space-y-4">
-                  <Alert className="bg-green-50 border-green-200">
-                    <ShieldCheck className="h-4 w-4 text-green-600" />
-                    <AlertTitle className="text-green-800">Administrador criado com sucesso!</AlertTitle>
-                    <AlertDescription className="text-green-700">
-                      <p className="mb-2">Use as seguintes credenciais para fazer login:</p>
-                      <p><strong>Email:</strong> {adminEmail}</p>
-                      <p><strong>Senha:</strong> {showPassword}</p>
-                      <p className="mt-2 text-sm text-green-600">Guarde estas credenciais em um lugar seguro!</p>
-                    </AlertDescription>
-                  </Alert>
-                  <Button 
-                    onClick={() => setShowPassword(null)}
-                    className="w-full bg-restaurant-light-green hover:bg-restaurant-forest-green"
-                  >
-                    Ir para tela de login
-                  </Button>
+                  <p className="mt-4">Enviando email de confirmação...</p>
                 </div>
               ) : error ? (
                 <div className="space-y-4">
@@ -118,7 +96,7 @@ const InitializeAdmin: React.FC = () => {
                     {adminEmail}
                   </p>
                   <p className="text-sm text-gray-600">
-                    Uma senha aleatória será gerada automaticamente e mostrada após a criação.
+                    Um email de confirmação será enviado para este endereço. Verifique sua caixa de entrada após a criação.
                   </p>
                   <Button 
                     onClick={initializeAdmin}

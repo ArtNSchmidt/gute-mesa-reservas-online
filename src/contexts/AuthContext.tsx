@@ -53,11 +53,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // Ouvir mudanças de autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state changed:', event, session);
         setAuthState(prev => ({ ...prev, isLoading: true }));
         
-        if (event === 'SIGNED_IN' && session) {
+        if (session) {
           await verifyAdminAndSetState(session.user.id);
-        } else if (event === 'SIGNED_OUT') {
+        } else {
           setAuthState({
             admin: null,
             isAuthenticated: false,
@@ -95,6 +96,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           isAuthenticated: true,
           isLoading: false
         });
+        
+        // Se estamos na página de login e já autenticado, redirecionar
+        const currentPath = window.location.pathname;
+        if (currentPath === '/admin/login') {
+          navigate('/admin/dashboard');
+        }
       } else {
         // Se não for admin, deslogar
         await supabase.auth.signOut();
@@ -136,18 +143,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           title: "Login realizado com sucesso",
           description: "Bem-vindo ao painel administrativo.",
         });
-        
-        navigate('/admin/dashboard');
       }
     } catch (error: any) {
       console.error('Login error:', error);
-      toast({
-        variant: "destructive",
-        title: "Erro de login",
-        description: error.message || "Email ou senha inválidos.",
-      });
       
-      throw error;
+      // Traduzir mensagens de erro comuns do Supabase
+      if (error.message?.includes('Invalid login credentials')) {
+        throw new Error('Credenciais inválidas. Verifique seu email e senha.');
+      } else if (error.message?.includes('Email not confirmed')) {
+        throw new Error('Email não confirmado. Verifique sua caixa de entrada para confirmar seu email.');
+      } else {
+        throw error;
+      }
     }
   };
 
@@ -177,7 +184,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       // Se não tiver uma senha, gera uma aleatória
       const adminPassword = password || Math.random().toString(36).slice(-10);
       
-      // 1. Criar o usuário com sign-up normal, com opção para pular verificação de email
+      // Criar o usuário com signup, isso enviará um email de confirmação
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email,
         password: adminPassword,
@@ -189,13 +196,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
       });
       
-      if (signUpError) throw signUpError;
+      if (signUpError) {
+        // Traduzir mensagens de erro comuns
+        if (signUpError.message?.includes('User already registered')) {
+          throw new Error('Este email já está registrado no sistema.');
+        }
+        throw signUpError;
+      }
       
       if (!signUpData.user) {
         throw new Error("Falha ao criar usuário");
       }
       
-      // 2. Atualizar o perfil do usuário para administrador
+      // Atualizar o perfil do usuário para administrador
       const { error: profileError } = await supabase
         .from('profiles')
         .update({ 
@@ -206,9 +219,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       
       if (profileError) throw profileError;
       
+      // Retornar a senha gerada, mas também mostrar no toast
       toast({
-        title: "Administrador criado com sucesso",
-        description: "O novo administrador pode fazer login com as credenciais criadas.",
+        title: "Email de confirmação enviado",
+        description: "Um email de confirmação foi enviado para o novo administrador.",
       });
       
       return adminPassword;
@@ -216,11 +230,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     } catch (error: any) {
       console.error('Erro ao criar admin:', error);
       
-      toast({
-        variant: "destructive",
-        title: "Erro ao criar admin",
-        description: error.message || "Não foi possível criar o administrador.",
-      });
+      // Se o erro for de limite de requisições, dê uma mensagem mais amigável
+      if (error?.status === 429 || (error?.message && error.message.includes("security purposes"))) {
+        throw new Error(`Limite de requisições excedido. Por favor, aguarde alguns minutos e tente novamente.`);
+      }
       
       throw error;
     }

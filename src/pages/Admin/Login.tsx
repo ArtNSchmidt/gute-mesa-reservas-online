@@ -1,14 +1,16 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { User, ShieldCheck } from 'lucide-react';
+import { User, ShieldCheck, AlertCircle } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/contexts/AuthContext';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useToast } from '@/components/ui/use-toast';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -17,17 +19,32 @@ const Login: React.FC = () => {
   const [showAdminDialog, setShowAdminDialog] = useState(false);
   const [newAdminEmail, setNewAdminEmail] = useState('');
   const [isCreatingAdmin, setIsCreatingAdmin] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [adminError, setAdminError] = useState<string | null>(null);
   
-  const { login, createAdmin } = useAuth();
+  const { login, createAdmin, authState } = useAuth();
+  const { toast } = useToast();
+  
+  // Redefinir erros quando os inputs mudam
+  useEffect(() => {
+    if (loginError) setLoginError(null);
+  }, [email, password]);
+  
+  useEffect(() => {
+    if (adminError) setAdminError(null);
+  }, [newAdminEmail]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoginError(null);
     setIsLoading(true);
     
     try {
       await login(email, password);
-    } catch (error) {
+      // O redirecionamento é tratado no AuthContext
+    } catch (error: any) {
       console.error('Login failed:', error);
+      setLoginError(error.message || 'Falha no login. Verifique suas credenciais.');
     } finally {
       setIsLoading(false);
     }
@@ -35,14 +52,20 @@ const Login: React.FC = () => {
 
   const handleCreateAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setAdminError(null);
     setIsCreatingAdmin(true);
     
     try {
       await createAdmin(newAdminEmail);
+      toast({
+        title: "Email de confirmação enviado",
+        description: `Um email de confirmação foi enviado para ${newAdminEmail}.`,
+      });
       setShowAdminDialog(false);
       setNewAdminEmail('');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to create admin:', error);
+      setAdminError(error.message || 'Falha ao criar administrador.');
     } finally {
       setIsCreatingAdmin(false);
     }
@@ -64,6 +87,13 @@ const Login: React.FC = () => {
           </CardHeader>
           <CardContent className="p-6">
             <form onSubmit={handleLogin} className="space-y-4">
+              {loginError && (
+                <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-800">
+                  <AlertCircle className="h-4 w-4 text-red-600" />
+                  <AlertDescription>{loginError}</AlertDescription>
+                </Alert>
+              )}
+              
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-gray-700">Email</Label>
                 <Input
@@ -74,6 +104,7 @@ const Login: React.FC = () => {
                   placeholder="seu.email@exemplo.com"
                   className="border-gray-300 focus:border-restaurant-forest-green focus:ring focus:ring-restaurant-forest-green/20"
                   required
+                  disabled={isLoading}
                 />
               </div>
               
@@ -87,6 +118,7 @@ const Login: React.FC = () => {
                   placeholder="Sua senha"
                   className="border-gray-300 focus:border-restaurant-forest-green focus:ring focus:ring-restaurant-forest-green/20"
                   required
+                  disabled={isLoading}
                 />
               </div>
               
@@ -113,9 +145,16 @@ const Login: React.FC = () => {
                     <DialogTitle>Adicionar Administrador Inicial</DialogTitle>
                     <DialogDescription>
                       Esta opção deve ser usada apenas para criar o administrador inicial do sistema.
+                      Um email de confirmação será enviado para o endereço fornecido.
                     </DialogDescription>
                   </DialogHeader>
                   <form onSubmit={handleCreateAdmin} className="space-y-4 py-4">
+                    {adminError && (
+                      <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-800">
+                        <AlertCircle className="h-4 w-4 text-red-600" />
+                        <AlertDescription>{adminError}</AlertDescription>
+                      </Alert>
+                    )}
                     <div className="space-y-2">
                       <Label htmlFor="newAdminEmail">Email do Administrador</Label>
                       <Input
@@ -125,6 +164,7 @@ const Login: React.FC = () => {
                         onChange={(e) => setNewAdminEmail(e.target.value)}
                         placeholder="admin@exemplo.com"
                         required
+                        disabled={isCreatingAdmin}
                       />
                     </div>
                     <DialogFooter>
@@ -133,7 +173,7 @@ const Login: React.FC = () => {
                         disabled={isCreatingAdmin}
                         className="w-full bg-restaurant-forest-green text-white"
                       >
-                        {isCreatingAdmin ? 'Adicionando...' : 'Adicionar Administrador'}
+                        {isCreatingAdmin ? 'Enviando...' : 'Enviar Confirmação'}
                       </Button>
                     </DialogFooter>
                   </form>
