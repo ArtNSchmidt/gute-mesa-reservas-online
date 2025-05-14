@@ -29,7 +29,7 @@ const Hero: React.FC = () => {
               </Button>
             </a>
             <a href="#menu">
-              <Button variant="outline" className="border-restaurant-lime-green text-white hover:bg-restaurant-lime-green/20 text-lg px-6 py-6">
+              <Button variant="outline" className="border-restaurant-lime-green text-restaurant-lime-green hover:bg-restaurant-lime-green/20 text-lg px-6 py-6">
                 Ver Cardápio
               </Button>
             </a>
