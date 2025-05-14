@@ -93,24 +93,15 @@ const Menu = () => {
               description="Musse de tangerina com farofa de brownie"
             />
             <MenuItem title="BROWNIE COM SORVETE" />
-            <MenuItem title="SORVETE 1 BOLA"
-              description="Escolha entre nossos sabores: Ninho com morango, Queijo com goiabada, Café, Ovomaltine, Nutella ou sabores da estação"
-            />
-            <MenuItem title="SORVETE 2 BOLAS"
-              description="Dupla experiência de sabores à sua escolha"
-            />
-            <MenuItem title="SORVETE 3 BOLAS"
-              description="Trio de sabores para uma experiência completa"
-            />
-            <MenuItem title="BARQUINHO"
-              description="Embarque em uma viagem de sabores com cinco bolas de sorvete servidas em taça especial em formato de barco, decorada com frutas frescas e calda à sua escolha"
+            <MenuItem title="SORVETE 1 BOLA" />
+            <MenuItem title="SORVETE 2 BOLAS" />
+            <MenuItem title="SORVETE 3 BOLAS" />
+            <MenuItem 
+              title="BARQUINHO"
+              description="5 bolas de sorvete servidas em uma taca de porcelana em formato de barco"
             />
             <MenuItem title="CAPUCCINO" />
             <MenuItem title="SORVETE CLÁUDIA BEGHINI" />
-            <MenuItem 
-              title="SORVETE" 
-              description="Ninho com morango / Queijo com goiabada / Café, banana e canela / Ovomaltine / Nutella / Jaca / Graviola / Ameixa / Caju e Castanha / Biscoito (Disponível: 1 bola / 2 bolas / 3 bolas / Barquinho)"
-            />
           </MenuSection>
           
           {/* Para Viagem */}

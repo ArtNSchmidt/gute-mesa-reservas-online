@@ -80,25 +80,22 @@ export const menuData: MenuCategory[] = [
       {
         id: "s4",
         title: "SORVETE 1 BOLA",
-        description: "Escolha entre nossos sabores: Ninho com morango, Queijo com goiabada, Café, Ovomaltine, Nutella ou sabores da estação",
         price: 12
       },
       {
         id: "s5",
         title: "SORVETE 2 BOLAS",
-        description: "Dupla experiência de sabores à sua escolha",
         price: 18
       },
       {
         id: "s6",
         title: "SORVETE 3 BOLAS",
-        description: "Trio de sabores para uma experiência completa",
         price: 23
       },
       {
         id: "s7",
         title: "BARQUINHO",
-        description: "Embarque em uma viagem de sabores com cinco bolas de sorvete servidas em taça especial em formato de barco, decorada com frutas frescas e calda à sua escolha",
+        description: "5 bolas de sorvete servidas em uma taca de porcelana em formato de barco",
         price: 35
       }
     ]
