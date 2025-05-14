@@ -4,10 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ReservationFormData } from '@/types';
+import { ReservationFormData, OrderItem } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { MenuItem, findItemById } from '@/utils/menuData';
 
 const reservationSchema = z.object({
   name: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres'),
@@ -21,7 +22,14 @@ const reservationSchema = z.object({
   }, { message: 'A data deve ser hoje ou no futuro' }),
   time: z.string().min(1, 'Horário é obrigatório'),
   guests: z.number().min(1, 'Mínimo de 1 convidado').max(20, 'Máximo de 20 convidados'),
-  special_requests: z.string().optional()
+  special_requests: z.string().optional(),
+  menu_items: z.array(z.object({
+    id: z.string(),
+    item_id: z.string(),
+    quantity: z.number().min(1),
+    name: z.string(),
+    price: z.number().optional()
+  })).optional().default([])
 });
 
 export const useReservationForm = () => {
@@ -46,7 +54,8 @@ export const useReservationForm = () => {
       date: todayString,
       time: '19:00',
       guests: 2,
-      special_requests: ''
+      special_requests: '',
+      menu_items: []
     }
   });
 
@@ -68,6 +77,81 @@ export const useReservationForm = () => {
     }));
     
     form.setValue(name as keyof ReservationFormData, parsedValue);
+  };
+
+  // Funções para gerenciar itens do menu
+  const handleAddMenuItem = (item: MenuItem) => {
+    // Verificar se o item já existe na lista
+    const currentItems = [...formData.menu_items];
+    const existingItemIndex = currentItems.findIndex(
+      i => i.item_id === item.id
+    );
+
+    if (existingItemIndex >= 0) {
+      // Se o item já existe, incrementar a quantidade
+      currentItems[existingItemIndex].quantity += 1;
+    } else {
+      // Se não existe, adicionar à lista
+      const newItem: OrderItem = {
+        id: uuidv4(),
+        item_id: item.id,
+        name: item.title,
+        quantity: 1,
+        price: item.price
+      };
+      currentItems.push(newItem);
+    }
+
+    // Atualizar o formData e o campo do formulário
+    setFormData(prev => ({
+      ...prev,
+      menu_items: currentItems
+    }));
+    form.setValue('menu_items', currentItems);
+  };
+
+  const handleRemoveMenuItem = (itemId: string) => {
+    const currentItems = [...formData.menu_items];
+    const existingItemIndex = currentItems.findIndex(
+      i => i.item_id === itemId
+    );
+
+    if (existingItemIndex >= 0) {
+      if (currentItems[existingItemIndex].quantity > 1) {
+        // Se há mais de um item, decrementar a quantidade
+        currentItems[existingItemIndex].quantity -= 1;
+      } else {
+        // Se há apenas um, remover da lista
+        currentItems.splice(existingItemIndex, 1);
+      }
+
+      // Atualizar o formData e o campo do formulário
+      setFormData(prev => ({
+        ...prev,
+        menu_items: currentItems
+      }));
+      form.setValue('menu_items', currentItems);
+    }
+  };
+
+  const handleUpdateMenuItemQuantity = (itemId: string, quantity: number) => {
+    if (quantity <= 0) return handleRemoveMenuItem(itemId);
+
+    const currentItems = [...formData.menu_items];
+    const existingItemIndex = currentItems.findIndex(
+      i => i.item_id === itemId
+    );
+
+    if (existingItemIndex >= 0) {
+      currentItems[existingItemIndex].quantity = quantity;
+
+      // Atualizar o formData e o campo do formulário
+      setFormData(prev => ({
+        ...prev,
+        menu_items: currentItems
+      }));
+      form.setValue('menu_items', currentItems);
+    }
   };
 
   // Handle form submission
@@ -105,6 +189,7 @@ export const useReservationForm = () => {
         time: values.time,
         guests: values.guests,
         special_requests: values.special_requests || null,
+        menu_items: values.menu_items.length > 0 ? values.menu_items : null,
         status: 'pending',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
@@ -145,6 +230,9 @@ export const useReservationForm = () => {
     isSubmitting,
     handleChange,
     handleSubmit,
+    handleAddMenuItem,
+    handleRemoveMenuItem,
+    handleUpdateMenuItemQuantity,
     today: todayString,
     maxDateString,
     formState

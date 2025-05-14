@@ -14,6 +14,15 @@ export interface Reservation {
   status: 'pending' | 'confirmed' | 'rejected' | 'completed' | 'cancelled';
   created_at: string;
   updated_at: string;
+  menu_items?: OrderItem[];
+}
+
+export interface OrderItem {
+  id: string;
+  item_id: string;
+  quantity: number;
+  name: string;
+  price?: number;
 }
 
 export interface Admin {
@@ -45,6 +54,7 @@ export interface ReservationFormData {
   time: string;
   guests: number;
   special_requests?: string;
+  menu_items: OrderItem[];
 }
 
 // Supabase database types
@@ -76,6 +86,7 @@ export interface Database {
           status: 'pending' | 'confirmed' | 'rejected' | 'completed' | 'cancelled';
           created_at: string;
           updated_at: string;
+          menu_items: OrderItem[] | null;
         };
       };
     };

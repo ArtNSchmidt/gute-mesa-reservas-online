@@ -6,7 +6,10 @@ import PersonalInfoFields from '@/components/reservation/PersonalInfoFields';
 import ReservationDetailFields from '@/components/reservation/ReservationDetailFields';
 import SpecialRequestsField from '@/components/reservation/SpecialRequestsField';
 import SubmitButton from '@/components/reservation/SubmitButton';
+import MenuItemSelect from '@/components/reservation/MenuItemSelect';
 import { Form } from '@/components/ui/form';
+import { menuData } from '@/utils/menuData';
+import { Separator } from '@/components/ui/separator';
 
 const ReservationForm: React.FC = () => {
   const {
@@ -15,6 +18,9 @@ const ReservationForm: React.FC = () => {
     isSubmitting,
     handleChange,
     handleSubmit,
+    handleAddMenuItem,
+    handleRemoveMenuItem,
+    handleUpdateMenuItemQuantity,
     today,
     maxDateString,
     formState
@@ -49,6 +55,16 @@ const ReservationForm: React.FC = () => {
                   <SpecialRequestsField 
                     value={formData.special_requests || ''} 
                     onChange={handleChange} 
+                  />
+                  
+                  <Separator className="my-6" />
+                  
+                  <MenuItemSelect 
+                    categories={menuData}
+                    selectedItems={formData.menu_items || []}
+                    onAddItem={handleAddMenuItem}
+                    onRemoveItem={handleRemoveMenuItem}
+                    onUpdateQuantity={handleUpdateMenuItemQuantity}
                   />
                   
                   <SubmitButton isSubmitting={isSubmitting} />
