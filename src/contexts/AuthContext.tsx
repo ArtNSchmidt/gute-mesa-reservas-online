@@ -1,5 +1,5 @@
+
 import React, { createContext, useState, useContext, ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { AuthState } from '@/types';
 import { useAuthState } from '@/hooks/useAuthState';
 import { handleLogin, handleLogout, createAdminUser } from '@/utils/auth';
@@ -7,14 +7,13 @@ import { handleLogin, handleLogout, createAdminUser } from '@/utils/auth';
 interface AuthContextProps {
   authState: AuthState;
   login: (email: string, password: string) => Promise<void>;
-  logout: () => Promise<void>;
+  logout: (redirectCallback?: () => void) => Promise<void>; // Modified to accept a redirect callback
   createAdmin: (email: string, password?: string) => Promise<string | null>;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const navigate = useNavigate();
   const authState = useAuthState();
 
   const login = async (email: string, password: string): Promise<void> => {
@@ -25,11 +24,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const logout = async (): Promise<void> => {
+  const logout = async (redirectCallback?: () => void): Promise<void> => {
     try {
       const success = await handleLogout();
-      if (success) {
-        navigate('/admin/login');
+      if (success && redirectCallback) {
+        redirectCallback();
       }
     } catch (error) {
       console.error('Logout error:', error);
