@@ -25,9 +25,8 @@ const InitializeAdmin: React.FC = () => {
     setShowPassword(null);
     
     try {
-      // Senha aleatória que será mostrada ao usuário
-      const password = Math.random().toString(36).slice(-10);
-      await createAdmin(adminEmail, password);
+      // Cria o admin e recebe a senha gerada
+      const password = await createAdmin(adminEmail);
       setShowPassword(password);
       setIsCreated(true);
       

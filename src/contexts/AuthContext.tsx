@@ -9,7 +9,7 @@ interface AuthContextProps {
   authState: AuthState;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  createAdmin: (email: string, password?: string) => Promise<void>;
+  createAdmin: (email: string, password?: string) => Promise<string>;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -171,40 +171,73 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   // Função para criar um novo administrador
-  const createAdmin = async (email: string, password?: string): Promise<void> => {
+  const createAdmin = async (email: string, password?: string): Promise<string> => {
     try {
       // Se não tiver uma senha, gera uma aleatória
       const adminPassword = password || Math.random().toString(36).slice(-10);
       
-      // 1. Criar o usuário com auth
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      // 1. Verificar se o usuário já existe
+      const { data: existingUser } = await supabase.auth.admin.getUserByEmail(email);
+      
+      if (existingUser) {
+        console.log('Usuário já existe, atualizando para admin');
+        
+        // Atualizar o perfil do usuário para administrador
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({ 
+            name: 'Administrador', 
+            role: 'admin' 
+          })
+          .eq('id', existingUser.id);
+        
+        if (profileError) throw profileError;
+        
+        // Redefinir a senha do usuário existente
+        const { error: passwordError } = await supabase.auth.admin.updateUserById(
+          existingUser.id,
+          { password: adminPassword }
+        );
+        
+        if (passwordError) throw passwordError;
+        
+        return adminPassword;
+      }
+      
+      // 2. Criar novo usuário se não existir
+      const { data, error: authError } = await supabase.auth.admin.createUser({
         email,
         password: adminPassword,
+        email_confirm: true,
+        user_metadata: {
+          name: 'Administrador'
+        },
+        role: 'authenticated'
       });
       
       if (authError) throw authError;
       
-      if (!authData.user) {
+      if (!data.user) {
         throw new Error("Falha ao criar usuário");
       }
       
-      // 2. Atualizar o perfil do usuário para administrador
+      // 3. Atualizar o perfil do usuário para administrador
       const { error: profileError } = await supabase
         .from('profiles')
         .update({ 
           name: 'Administrador', 
           role: 'admin' 
         })
-        .eq('id', authData.user.id);
+        .eq('id', data.user.id);
       
       if (profileError) throw profileError;
       
       toast({
         title: "Administrador criado com sucesso",
-        description: password 
-          ? "O novo administrador pode fazer login com as credenciais criadas." 
-          : `Uma senha temporária foi gerada: ${adminPassword}. Informe ao administrador.`,
+        description: "O novo administrador pode fazer login com as credenciais criadas.",
       });
+      
+      return adminPassword;
       
     } catch (error: any) {
       console.error('Erro ao criar admin:', error);
