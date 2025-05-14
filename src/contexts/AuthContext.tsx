@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
 import { Admin, AuthState } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
+import { User } from '@supabase/supabase-js';
 
 interface AuthContextProps {
   authState: AuthState;
@@ -177,14 +178,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const adminPassword = password || Math.random().toString(36).slice(-10);
       
       // 1. Verificar se o usuário já existe usando a lista de usuários
-      const { data: { users }, error: listError } = await supabase.auth.admin.listUsers({
+      const { data, error: listError } = await supabase.auth.admin.listUsers({
         page: 1,
         perPage: 1000
       });
       
       if (listError) throw listError;
       
-      const existingUser = users?.find(user => user.email === email);
+      // Garantir que data.users é um array e encontrar usuário pelo email
+      const users = data?.users || [];
+      const existingUser = users.find((user: User) => user.email === email);
       
       if (existingUser) {
         console.log('Usuário já existe, atualizando para admin');
@@ -212,7 +215,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
       
       // 2. Criar novo usuário se não existir
-      const { data, error: authError } = await supabase.auth.admin.createUser({
+      const { data: userData, error: authError } = await supabase.auth.admin.createUser({
         email,
         password: adminPassword,
         email_confirm: true,
@@ -224,7 +227,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       
       if (authError) throw authError;
       
-      if (!data.user) {
+      if (!userData.user) {
         throw new Error("Falha ao criar usuário");
       }
       
@@ -235,7 +238,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           name: 'Administrador', 
           role: 'admin' 
         })
-        .eq('id', data.user.id);
+        .eq('id', userData.user.id);
       
       if (profileError) throw profileError;
       
