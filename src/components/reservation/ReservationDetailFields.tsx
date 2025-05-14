@@ -3,7 +3,7 @@ import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { FieldErrors } from 'react-hook-form';
-import { ReservationFormValues } from '@/hooks/useReservationForm';
+import { ReservationFormData } from '@/types';
 
 interface ReservationDetailFieldsProps {
   formData: {
@@ -14,7 +14,7 @@ interface ReservationDetailFieldsProps {
   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
   today: string;
   maxDateString: string;
-  errors?: FieldErrors<ReservationFormValues>;
+  errors?: FieldErrors<ReservationFormData>;
 }
 
 const ReservationDetailFields: React.FC<ReservationDetailFieldsProps> = ({ 

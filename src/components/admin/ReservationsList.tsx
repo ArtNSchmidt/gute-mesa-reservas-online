@@ -47,7 +47,7 @@ const ReservationsList: React.FC<ReservationsListProps> = ({
           key={reservation.id}
           reservation={reservation}
           formatDate={formatDate}
-          updateReservationStatus={updateReservationStatus}
+          onUpdateStatus={updateReservationStatus}
         />
       ))}
     </div>

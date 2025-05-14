@@ -3,7 +3,7 @@ import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { FieldErrors } from 'react-hook-form';
-import { ReservationFormValues } from '@/hooks/useReservationForm';
+import { ReservationFormData } from '@/types';
 
 interface PersonalInfoFieldsProps {
   formData: {
@@ -12,7 +12,7 @@ interface PersonalInfoFieldsProps {
     phone: string;
   };
   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  errors?: FieldErrors<ReservationFormValues>;
+  errors?: FieldErrors<ReservationFormData>;
 }
 
 const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({ 
