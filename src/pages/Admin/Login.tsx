@@ -56,11 +56,13 @@ const Login: React.FC = () => {
     setIsCreatingAdmin(true);
     
     try {
-      await createAdmin(newAdminEmail);
+      const result = await createAdmin(newAdminEmail);
+      
       toast({
         title: "Email de confirmação enviado",
-        description: `Um email de confirmação foi enviado para ${newAdminEmail}.`,
+        description: `Um email de confirmação foi enviado para ${newAdminEmail}. Verifique a caixa de entrada.`,
       });
+      
       setShowAdminDialog(false);
       setNewAdminEmail('');
     } catch (error: any) {

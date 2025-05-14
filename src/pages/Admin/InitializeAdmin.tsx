@@ -34,13 +34,7 @@ const InitializeAdmin: React.FC = () => {
       });
     } catch (err: any) {
       console.error("Erro ao criar admin:", err);
-      
-      // Tratamento específico para erro de taxa limite
-      if (err?.status === 429 || (err?.message && err.message.includes("security purposes"))) {
-        setError(`Limite de requisições excedido. ${err.message || 'Aguarde alguns minutos e tente novamente.'}`);
-      } else {
-        setError(err.message || 'Ocorreu um erro ao criar o administrador');
-      }
+      setError(err.message || 'Ocorreu um erro ao criar o administrador');
     } finally {
       setIsCreating(false);
     }

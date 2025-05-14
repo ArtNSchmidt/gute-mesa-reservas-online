@@ -4,13 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
 import { Admin, AuthState } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
-import { User } from '@supabase/supabase-js';
 
 interface AuthContextProps {
   authState: AuthState;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  createAdmin: (email: string, password?: string) => Promise<string>;
+  createAdmin: (email: string, password?: string) => Promise<string | null>;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -179,7 +178,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   // Função para criar um novo administrador
-  const createAdmin = async (email: string, password?: string): Promise<string> => {
+  const createAdmin = async (email: string, password?: string): Promise<string | null> => {
     try {
       // Se não tiver uma senha, gera uma aleatória
       const adminPassword = password || Math.random().toString(36).slice(-10);
@@ -208,6 +207,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         throw new Error("Falha ao criar usuário");
       }
       
+      console.log("Usuário criado com sucesso:", signUpData.user.id);
+      
       // Atualizar o perfil do usuário para administrador
       const { error: profileError } = await supabase
         .from('profiles')
@@ -217,14 +218,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         })
         .eq('id', signUpData.user.id);
       
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error("Erro ao atualizar perfil:", profileError);
+        throw profileError;
+      }
       
-      // Retornar a senha gerada, mas também mostrar no toast
-      toast({
-        title: "Email de confirmação enviado",
-        description: "Um email de confirmação foi enviado para o novo administrador.",
-      });
+      console.log("Perfil atualizado com sucesso");
       
+      // Retornar a senha gerada, para caso a confirmação de email esteja desativada
       return adminPassword;
       
     } catch (error: any) {
