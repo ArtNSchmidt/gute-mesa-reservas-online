@@ -66,7 +66,7 @@ export const verifyAdminAndGetData = async (userId: string): Promise<Admin | nul
 };
 
 /**
- * Cria um novo usuário administrador
+ * Cria um novo usuário administrador diretamente, sem confirmação de email
  */
 export const createAdminUser = async (email: string, password?: string): Promise<string | null> => {
   try {
@@ -75,11 +75,11 @@ export const createAdminUser = async (email: string, password?: string): Promise
     
     console.log("Iniciando criação de administrador com email:", email);
     
+    // Criar o usuário diretamente sem enviar email de confirmação
     const { data, error: signUpError } = await supabase.auth.signUp({
       email,
       password: adminPassword,
       options: {
-        emailRedirectTo: window.location.origin + "/admin/login",
         data: {
           name: 'Administrador',
           role: 'admin'
@@ -92,20 +92,24 @@ export const createAdminUser = async (email: string, password?: string): Promise
       
       // Verificar se o erro é de usuário já registrado
       if (signUpError.message?.includes('User already registered')) {
-        // Tentar reenviar o email de confirmação
-        const { error: resendError } = await supabase.auth.resend({
-          type: 'signup',
-          email: email
+        console.log("Usuário já existe, tentando fazer login para verificar");
+        
+        // Tentar fazer login para confirmar que o usuário existe e funciona
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password: adminPassword
         });
         
-        if (resendError) throw resendError;
+        if (signInError) {
+          throw new Error("Usuário existe mas não foi possível fazer login. Verifique as credenciais.");
+        }
         
         toast({
-          title: "Email de confirmação reenviado",
-          description: `Um novo email de confirmação foi enviado para ${email}. Verifique também a pasta de spam.`,
+          title: "Administrador já existe",
+          description: `O administrador com email ${email} já existe e as credenciais são válidas.`,
         });
         
-        return null;
+        return adminPassword;
       }
       
       throw signUpError;
@@ -121,31 +125,26 @@ export const createAdminUser = async (email: string, password?: string): Promise
     // Atualizar o perfil do usuário para administrador
     const { error: profileError } = await supabase
       .from('profiles')
-      .update({ 
+      .insert({ 
+        id: data.user.id,
+        email: email,
         name: 'Administrador', 
         role: 'admin' 
-      })
-      .eq('id', data.user.id);
+      });
     
     if (profileError) {
-      console.error("Erro ao atualizar perfil:", profileError);
+      console.error("Erro ao criar perfil:", profileError);
       throw profileError;
     }
     
     console.log("Perfil atualizado com sucesso");
     
-    // Enviar um email de confirmação manualmente
-    await supabase.auth.resend({
-      type: 'signup',
-      email: email,
-    });
-    
     toast({
-      title: "Email de confirmação enviado",
-      description: `Um email de confirmação foi enviado para ${email}. Verifique também a pasta de spam.`,
+      title: "Administrador criado com sucesso",
+      description: `O administrador ${email} foi criado com sucesso.`,
     });
     
-    // Retornar a senha gerada, para caso a confirmação de email esteja desativada
+    // Retornar a senha gerada ou usada
     return adminPassword;
     
   } catch (error: any) {
