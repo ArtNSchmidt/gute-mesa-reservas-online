@@ -21,44 +21,15 @@ export const verifyAdminAndGetData = async (userId: string): Promise<Admin | nul
       throw profileError;
     }
     
-    // Se não encontrou perfil, tenta criar um perfil admin
-    if (!profileData) {
-      const { data: userData, error: userError } = await supabase.auth.admin.getUserById(userId);
-      
-      if (userError || !userData.user) {
-        console.error('Usuário não encontrado:', userError);
-        return null;
-      }
-      
-      // Criar perfil para o usuário
-      const { error: insertError } = await supabase
-        .from('profiles')
-        .insert({
-          id: userId,
-          email: userData.user.email,
-          name: 'Administrador',
-          role: 'admin'
-        });
-        
-      if (insertError) {
-        console.error('Erro ao criar perfil:', insertError);
-        return null;
-      }
-      
-      return {
-        email: userData.user.email || '',
-        name: 'Administrador'
-      };
+    // Se não encontrou perfil ou não é admin, retornar null
+    if (!profileData || profileData.role !== 'admin') {
+      return null;
     }
     
-    if (profileData.role === 'admin') {
-      return {
-        email: profileData.email || '',
-        name: profileData.name || 'Administrador'
-      };
-    }
-    
-    return null;
+    return {
+      email: profileData.email || '',
+      name: profileData.name || 'Administrador'
+    };
   } catch (error) {
     console.error('Erro ao verificar perfil:', error);
     return null;
@@ -76,22 +47,21 @@ export const createAdminUser = async (email: string, password?: string): Promise
     console.log("Iniciando criação de administrador com email:", email);
     
     // Criar o usuário diretamente sem enviar email de confirmação
-    const { data, error: signUpError } = await supabase.auth.signUp({
+    const { data, error: signUpError } = await supabase.auth.admin.createUser({
       email,
       password: adminPassword,
-      options: {
-        data: {
-          name: 'Administrador',
-          role: 'admin'
-        }
+      email_confirm: true,
+      user_metadata: {
+        name: 'Administrador',
+        role: 'admin'
       }
     });
     
-    if (signUpError) {
+    if (signUpError || !data?.user) {
       console.error("Erro no signup:", signUpError);
       
       // Verificar se o erro é de usuário já registrado
-      if (signUpError.message?.includes('User already registered')) {
+      if (signUpError?.message?.includes('User already registered')) {
         console.log("Usuário já existe, tentando fazer login para verificar");
         
         // Tentar fazer login para confirmar que o usuário existe e funciona
@@ -112,29 +82,33 @@ export const createAdminUser = async (email: string, password?: string): Promise
         return adminPassword;
       }
       
-      throw signUpError;
-    }
-    
-    if (!data.user) {
-      console.error("Nenhum usuário retornado após signup");
-      throw new Error("Falha ao criar usuário");
+      throw signUpError || new Error("Falha ao criar usuário");
     }
     
     console.log("Usuário criado com sucesso:", data.user.id);
     
-    // Atualizar o perfil do usuário para administrador
-    const { error: profileError } = await supabase
+    // Atualizar o perfil do usuário para administrador - esta etapa já deve ser feita pelo trigger
+    // mas vamos garantir que o perfil exista com o papel correto
+    const { data: existingProfile } = await supabase
       .from('profiles')
-      .insert({ 
-        id: data.user.id,
-        email: email,
-        name: 'Administrador', 
-        role: 'admin' 
-      });
-    
-    if (profileError) {
-      console.error("Erro ao criar perfil:", profileError);
-      throw profileError;
+      .select('*')
+      .eq('id', data.user.id)
+      .maybeSingle();
+      
+    if (!existingProfile) {
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({ 
+          id: data.user.id,
+          email: email,
+          name: 'Administrador', 
+          role: 'admin' 
+        });
+      
+      if (profileError) {
+        console.error("Erro ao criar perfil:", profileError);
+        throw profileError;
+      }
     }
     
     console.log("Perfil atualizado com sucesso");
