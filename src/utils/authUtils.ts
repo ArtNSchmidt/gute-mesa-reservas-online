@@ -1,7 +1,7 @@
-
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Admin } from '@/types';
+import { User } from '@supabase/supabase-js';
 
 /**
  * Verifies if a user ID belongs to an admin and returns admin data
@@ -67,7 +67,7 @@ export const createAdminUser = async (email: string, password?: string): Promise
     
     // Verificar se o email já está registrado
     // Corrigindo o método para verificar usuários existentes
-    const { data: existingUsers, error: listError } = await supabase.auth.admin.listUsers({
+    const { data: existingUsersData, error: listError } = await supabase.auth.admin.listUsers({
       page: 1,
       perPage: 100, // Aumentar para garantir que podemos encontrar o usuário
     });
@@ -77,11 +77,9 @@ export const createAdminUser = async (email: string, password?: string): Promise
       throw listError;
     }
     
-    // Procurar pelo usuário com o email correspondente
-    // Definindo explicitamente o tipo para resolver o erro
-    const existingUser = existingUsers && existingUsers.users ? 
-      existingUsers.users.find(user => user.email === email) : 
-      undefined;
+    // Definindo explicitamente o tipo para resolver o erro e procurar pelo usuário com o email correspondente
+    const existingUsers: User[] = existingUsersData?.users || [];
+    const existingUser = existingUsers.find(user => user.email === email);
     
     if (existingUser) {
       console.log("Usuário já existe, enviando novo email de confirmação");
