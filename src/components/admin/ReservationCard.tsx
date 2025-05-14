@@ -1,81 +1,91 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Reservation } from '@/types';
+import { Card, CardContent } from '@/components/ui/card';
 import StatusBadge from './StatusBadge';
+import { Button } from '@/components/ui/button';
 
 interface ReservationCardProps {
   reservation: Reservation;
-  onUpdateStatus: (id: string, status: 'confirmed' | 'rejected' | 'completed') => void;
   formatDate: (dateString: string) => string;
+  onUpdateStatus: (id: string, status: 'confirmed' | 'rejected' | 'completed' | 'cancelled') => void;
 }
 
-const ReservationCard: React.FC<ReservationCardProps> = ({ 
-  reservation, 
-  onUpdateStatus,
-  formatDate 
-}) => {
+const ReservationCard: React.FC<ReservationCardProps> = ({ reservation, formatDate, onUpdateStatus }) => {
+  const { id, name, email, phone, date, time, guests, special_requests, status } = reservation;
+
+  const isPending = status === 'pending';
+  const isConfirmed = status === 'confirmed';
+
   return (
-    <Card key={reservation.id} className="overflow-hidden">
-      <CardHeader className="bg-gray-50 py-4 px-6 flex flex-row items-center justify-between">
-        <div>
-          <CardTitle className="text-lg font-medium">{reservation.name}</CardTitle>
-          <p className="text-sm text-gray-500">
-            Data: {formatDate(reservation.date)} às {reservation.time} | {reservation.guests} pessoas
-          </p>
-        </div>
-        <div>
-          <StatusBadge status={reservation.status} />
-        </div>
-      </CardHeader>
+    <Card className="mb-4">
       <CardContent className="p-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+        <div className="flex flex-wrap justify-between items-start gap-4">
           <div>
-            <h4 className="font-medium text-gray-500">Email</h4>
-            <p>{reservation.email}</p>
-          </div>
-          <div>
-            <h4 className="font-medium text-gray-500">Telefone</h4>
-            <p>{reservation.phone}</p>
-          </div>
-          {reservation.special_requests && (
-            <div className="col-span-1 sm:col-span-2">
-              <h4 className="font-medium text-gray-500">Solicitações Especiais</h4>
-              <p>{reservation.special_requests}</p>
+            <h3 className="text-lg font-semibold">{name}</h3>
+            <div className="text-sm text-gray-600 mt-1">
+              <p>{email}</p>
+              <p>{phone}</p>
             </div>
-          )}
+          </div>
+          
+          <StatusBadge status={status} />
         </div>
         
-        <div className="border-t pt-4 flex flex-wrap gap-2 justify-end">
-          {reservation.status === 'pending' && (
-            <>
-              <Button 
-                variant="outline" 
-                className="border-green-500 text-green-600 hover:bg-green-50"
-                onClick={() => onUpdateStatus(reservation.id, 'confirmed')}
-              >
-                Confirmar
-              </Button>
-              <Button 
-                variant="outline" 
-                className="border-red-500 text-red-600 hover:bg-red-50"
-                onClick={() => onUpdateStatus(reservation.id, 'rejected')}
-              >
-                Rejeitar
-              </Button>
-            </>
-          )}
-          {reservation.status === 'confirmed' && (
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <p className="text-sm font-medium">Data</p>
+            <p className="text-sm">{formatDate(date)}</p>
+          </div>
+          <div>
+            <p className="text-sm font-medium">Hora</p>
+            <p className="text-sm">{time}</p>
+          </div>
+          <div>
+            <p className="text-sm font-medium">Pessoas</p>
+            <p className="text-sm">{guests}</p>
+          </div>
+        </div>
+        
+        {special_requests && (
+          <div className="mt-4">
+            <p className="text-sm font-medium">Observações</p>
+            <p className="text-sm text-gray-600">{special_requests}</p>
+          </div>
+        )}
+        
+        {isPending && (
+          <div className="mt-4 flex flex-wrap gap-2">
             <Button 
-              variant="outline" 
-              className="border-blue-500 text-blue-600 hover:bg-blue-50"
-              onClick={() => onUpdateStatus(reservation.id, 'completed')}
+              size="sm" 
+              variant="default"
+              className="bg-green-600 hover:bg-green-700"
+              onClick={() => onUpdateStatus(id, 'confirmed')}
+            >
+              Confirmar
+            </Button>
+            <Button 
+              size="sm" 
+              variant="destructive"
+              onClick={() => onUpdateStatus(id, 'rejected')}
+            >
+              Rejeitar
+            </Button>
+          </div>
+        )}
+        
+        {isConfirmed && (
+          <div className="mt-4">
+            <Button 
+              size="sm" 
+              variant="default"
+              className="bg-blue-600 hover:bg-blue-700"
+              onClick={() => onUpdateStatus(id, 'completed')}
             >
               Marcar como Concluída
             </Button>
-          )}
-        </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
