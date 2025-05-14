@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { AuthState } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
-import { verifyAdminAndGetData } from '@/utils/authUtils';
+import { verifyAdminAndGetData } from '@/utils/auth';
 import { toast } from '@/components/ui/use-toast';
 
 /**

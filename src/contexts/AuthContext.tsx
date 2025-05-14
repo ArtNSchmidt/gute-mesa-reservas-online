@@ -1,9 +1,8 @@
-
 import React, { createContext, useState, useContext, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthState } from '@/types';
 import { useAuthState } from '@/hooks/useAuthState';
-import { handleLogin, handleLogout, createAdminUser } from '@/utils/authUtils';
+import { handleLogin, handleLogout, createAdminUser } from '@/utils/auth';
 
 interface AuthContextProps {
   authState: AuthState;
