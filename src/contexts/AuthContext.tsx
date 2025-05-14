@@ -2,7 +2,7 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
-import { Admin, AuthState, Database } from '@/types';
+import { Admin, AuthState } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
 
 interface AuthContextProps {
@@ -108,9 +108,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
               await supabase.auth.signOut();
               
               toast({
-                variant: "destructive",
                 title: "Acesso negado",
                 description: "Você não tem permissão para acessar o painel administrativo.",
+                variant: "destructive"
               });
               
               setAuthState({
