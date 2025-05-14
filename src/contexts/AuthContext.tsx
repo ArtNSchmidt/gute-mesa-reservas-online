@@ -2,7 +2,7 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
-import { Admin, AuthState } from '@/types';
+import { Admin, AuthState, Database } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
 
 interface AuthContextProps {
@@ -37,7 +37,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             
           if (profileError) throw profileError;
           
-          if (profileData.role === 'admin') {
+          if (profileData && profileData.role === 'admin') {
             const admin: Admin = {
               email: profileData.email,
               name: profileData.name || 'Administrador'
@@ -92,7 +92,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
               
             if (profileError) throw profileError;
             
-            if (profileData.role === 'admin') {
+            if (profileData && profileData.role === 'admin') {
               const admin: Admin = {
                 email: profileData.email,
                 name: profileData.name || 'Administrador'

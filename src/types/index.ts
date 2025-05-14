@@ -46,3 +46,38 @@ export interface ReservationFormData {
   guests: number;
   special_requests?: string;
 }
+
+// Supabase database types
+export interface Database {
+  public: {
+    Tables: {
+      profiles: {
+        Row: {
+          id: string;
+          email: string;
+          name: string | null;
+          avatar_url: string | null;
+          created_at: string;
+          updated_at: string;
+          role: 'customer' | 'admin';
+        };
+      };
+      reservations: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          email: string;
+          phone: string;
+          date: string;
+          time: string;
+          guests: number;
+          special_requests: string | null;
+          status: 'pending' | 'confirmed' | 'rejected' | 'completed' | 'cancelled';
+          created_at: string;
+          updated_at: string;
+        };
+      };
+    };
+  };
+}

@@ -1,20 +1,19 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { Reservation } from '@/types';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { toast } from '@/components/ui/use-toast';
+import ReservationsList from '@/components/admin/ReservationsList';
 
 const Dashboard: React.FC = () => {
   const { authState } = useAuth();
   const navigate = useNavigate();
   const [reservations, setReservations] = useState<Reservation[]>([]);
-  const [filter, setFilter] = useState<'all' | 'pending' | 'confirmed' | 'rejected' | 'completed'>('all');
+  const [filter, setFilter] = useState<'all' | 'pending' | 'confirmed' | 'rejected' | 'completed' | 'cancelled'>('all');
 
   useEffect(() => {
     if (!authState.isAuthenticated) {
@@ -59,46 +58,9 @@ const Dashboard: React.FC = () => {
     });
   };
 
-  const getFilteredReservations = () => {
-    if (filter === 'all') {
-      return reservations;
-    }
-    return reservations.filter((res) => res.status === filter);
-  };
-
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('pt-BR');
-  };
-
-  const getStatusBadgeClass = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'confirmed':
-        return 'bg-green-100 text-green-800';
-      case 'rejected':
-        return 'bg-red-100 text-red-800';
-      case 'completed':
-        return 'bg-blue-100 text-blue-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return 'Pendente';
-      case 'confirmed':
-        return 'Confirmado';
-      case 'rejected':
-        return 'Rejeitado';
-      case 'completed':
-        return 'Concluído';
-      default:
-        return status;
-    }
   };
 
   return (
@@ -124,23 +86,63 @@ const Dashboard: React.FC = () => {
                     <TabsTrigger value="confirmed">Confirmadas</TabsTrigger>
                     <TabsTrigger value="rejected">Rejeitadas</TabsTrigger>
                     <TabsTrigger value="completed">Concluídas</TabsTrigger>
+                    <TabsTrigger value="cancelled">Canceladas</TabsTrigger>
                   </TabsList>
                 </div>
 
                 <TabsContent value="all" className="mt-4">
-                  {renderReservationsList(getFilteredReservations())}
+                  <ReservationsList 
+                    reservations={reservations}
+                    filter={filter}
+                    setFilter={setFilter}
+                    updateReservationStatus={updateReservationStatus}
+                    formatDate={formatDate}
+                  />
                 </TabsContent>
                 <TabsContent value="pending" className="mt-4">
-                  {renderReservationsList(getFilteredReservations())}
+                  <ReservationsList 
+                    reservations={reservations}
+                    filter={filter}
+                    setFilter={setFilter}
+                    updateReservationStatus={updateReservationStatus}
+                    formatDate={formatDate}
+                  />
                 </TabsContent>
                 <TabsContent value="confirmed" className="mt-4">
-                  {renderReservationsList(getFilteredReservations())}
+                  <ReservationsList 
+                    reservations={reservations}
+                    filter={filter}
+                    setFilter={setFilter}
+                    updateReservationStatus={updateReservationStatus}
+                    formatDate={formatDate}
+                  />
                 </TabsContent>
                 <TabsContent value="rejected" className="mt-4">
-                  {renderReservationsList(getFilteredReservations())}
+                  <ReservationsList 
+                    reservations={reservations}
+                    filter={filter}
+                    setFilter={setFilter}
+                    updateReservationStatus={updateReservationStatus}
+                    formatDate={formatDate}
+                  />
                 </TabsContent>
                 <TabsContent value="completed" className="mt-4">
-                  {renderReservationsList(getFilteredReservations())}
+                  <ReservationsList 
+                    reservations={reservations}
+                    filter={filter}
+                    setFilter={setFilter}
+                    updateReservationStatus={updateReservationStatus}
+                    formatDate={formatDate}
+                  />
+                </TabsContent>
+                <TabsContent value="cancelled" className="mt-4">
+                  <ReservationsList 
+                    reservations={reservations}
+                    filter={filter}
+                    setFilter={setFilter}
+                    updateReservationStatus={updateReservationStatus}
+                    formatDate={formatDate}
+                  />
                 </TabsContent>
               </Tabs>
             </div>
@@ -150,91 +152,6 @@ const Dashboard: React.FC = () => {
       <Footer />
     </div>
   );
-
-  function renderReservationsList(filteredReservations: Reservation[]) {
-    if (filteredReservations.length === 0) {
-      return (
-        <div className="text-center py-12">
-          <p className="text-gray-500 mb-4">Nenhuma reserva encontrada.</p>
-          {filter !== 'all' && (
-            <Button variant="outline" onClick={() => setFilter('all')}>
-              Ver todas as reservas
-            </Button>
-          )}
-        </div>
-      );
-    }
-
-    return (
-      <div className="space-y-6">
-        {filteredReservations.map((reservation) => (
-          <Card key={reservation.id} className="overflow-hidden">
-            <CardHeader className="bg-gray-50 py-4 px-6 flex flex-row items-center justify-between">
-              <div>
-                <CardTitle className="text-lg font-medium">{reservation.name}</CardTitle>
-                <p className="text-sm text-gray-500">
-                  Data: {formatDate(reservation.date)} às {reservation.time} | {reservation.guests} pessoas
-                </p>
-              </div>
-              <div>
-                <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getStatusBadgeClass(reservation.status)}`}>
-                  {getStatusText(reservation.status)}
-                </span>
-              </div>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                <div>
-                  <h4 className="font-medium text-gray-500">Email</h4>
-                  <p>{reservation.email}</p>
-                </div>
-                <div>
-                  <h4 className="font-medium text-gray-500">Telefone</h4>
-                  <p>{reservation.phone}</p>
-                </div>
-                {reservation.specialRequests && (
-                  <div className="col-span-1 sm:col-span-2">
-                    <h4 className="font-medium text-gray-500">Solicitações Especiais</h4>
-                    <p>{reservation.specialRequests}</p>
-                  </div>
-                )}
-              </div>
-              
-              <div className="border-t pt-4 flex flex-wrap gap-2 justify-end">
-                {reservation.status === 'pending' && (
-                  <>
-                    <Button 
-                      variant="outline" 
-                      className="border-green-500 text-green-600 hover:bg-green-50"
-                      onClick={() => updateReservationStatus(reservation.id, 'confirmed')}
-                    >
-                      Confirmar
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      className="border-red-500 text-red-600 hover:bg-red-50"
-                      onClick={() => updateReservationStatus(reservation.id, 'rejected')}
-                    >
-                      Rejeitar
-                    </Button>
-                  </>
-                )}
-                {reservation.status === 'confirmed' && (
-                  <Button 
-                    variant="outline" 
-                    className="border-blue-500 text-blue-600 hover:bg-blue-50"
-                    onClick={() => updateReservationStatus(reservation.id, 'completed')}
-                  >
-                    Marcar como Concluída
-                  </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    );
-  }
 };
 
 export default Dashboard;

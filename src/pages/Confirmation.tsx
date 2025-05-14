@@ -117,10 +117,10 @@ const Confirmation = () => {
                     <h3 className="font-medium text-gray-500">Telefone</h3>
                     <p className="text-lg">{reservation.phone}</p>
                   </div>
-                  {reservation.specialRequests && (
+                  {reservation.special_requests && (
                     <div className="sm:col-span-2">
                       <h3 className="font-medium text-gray-500">Solicitações Especiais</h3>
-                      <p className="text-lg">{reservation.specialRequests}</p>
+                      <p className="text-lg">{reservation.special_requests}</p>
                     </div>
                   )}
                   <div className="sm:col-span-2 mt-2">
