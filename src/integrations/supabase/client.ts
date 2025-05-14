@@ -20,7 +20,6 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
 });
 
 // Cliente administrativo com a service role key
-// IMPORTANTE: Este cliente deve ser usado apenas para operações específicas que precisem de direitos administrativos
 export const adminSupabase = createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
   auth: {
     autoRefreshToken: false,
@@ -28,29 +27,5 @@ export const adminSupabase = createClient<Database>(SUPABASE_URL, SUPABASE_SERVI
   }
 });
 
-// Definir o tipo para as funções administrativas que queremos disponibilizar
-// Isso resolve o erro de tipo usando uma extensão de interface
-declare module '@supabase/supabase-js' {
-  interface SupabaseClient {
-    // Estamos adicionando uma propriedade customizada 'adminFunctions' em vez de modificar a propriedade 'admin' existente
-    adminFunctions: {
-      createUser: (options: any) => Promise<any>;
-      getUserById: (id: string) => Promise<any>;
-      listUsers: () => Promise<any>;
-    }
-  }
-}
-
-// Adicionar as funções administrativas como uma propriedade separada da interface
-// em vez de sobrescrever o objeto auth.admin
-supabase.adminFunctions = {
-  createUser: async (options: any) => {
-    return await adminSupabase.auth.admin.createUser(options);
-  },
-  getUserById: async (id: string) => {
-    return await adminSupabase.auth.admin.getUserById(id);
-  },
-  listUsers: async () => {
-    return await adminSupabase.auth.admin.listUsers();
-  }
-};
+// Removendo as propriedades adminFunctions e a declaração de módulo,
+// já que agora vamos usar o cliente adminSupabase diretamente

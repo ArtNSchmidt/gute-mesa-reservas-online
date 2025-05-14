@@ -1,8 +1,7 @@
 
-import { supabase } from '@/integrations/supabase/client';
+import { adminSupabase, supabase } from '@/integrations/supabase/client';
 import { Admin } from '@/types';
 import { toast } from '@/components/ui/use-toast';
-import { User } from '@supabase/supabase-js';
 
 /**
  * Verifica se um ID de usuário pertence a um administrador e retorna os dados do admin
@@ -46,9 +45,9 @@ export const createAdminUser = async (email: string, password?: string): Promise
     
     console.log("Iniciando criação de administrador com email:", email);
     
-    // Criar o usuário diretamente sem enviar email de confirmação
-    // Usando adminFunctions em vez de auth.admin
-    const { data, error: signUpError } = await supabase.adminFunctions.createUser({
+    // Criar o usuário diretamente usando o cliente administrativo
+    // CORREÇÃO: Usar adminSupabase diretamente em vez de supabase.adminFunctions
+    const { data, error: signUpError } = await adminSupabase.auth.admin.createUser({
       email,
       password: adminPassword,
       email_confirm: true,
