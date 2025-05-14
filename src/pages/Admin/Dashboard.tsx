@@ -8,54 +8,88 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { toast } from '@/components/ui/use-toast';
 import ReservationsList from '@/components/admin/ReservationsList';
+import { supabase } from '@/integrations/supabase/client';
 
 const Dashboard: React.FC = () => {
-  const { authState } = useAuth();
+  const { authState, logout } = useAuth();
   const navigate = useNavigate();
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [filter, setFilter] = useState<'all' | 'pending' | 'confirmed' | 'rejected' | 'completed' | 'cancelled'>('all');
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!authState.isAuthenticated) {
+    if (!authState.isLoading && !authState.isAuthenticated) {
       navigate('/admin/login');
     }
-  }, [authState.isAuthenticated, navigate]);
+  }, [authState.isAuthenticated, authState.isLoading, navigate]);
 
   useEffect(() => {
-    // In a real app, this would be an API call to fetch reservations
-    const fetchReservations = () => {
+    const fetchReservations = async () => {
+      if (!authState.isAuthenticated) return;
+      
+      setIsLoading(true);
       try {
-        const storedReservations = JSON.parse(localStorage.getItem('reservations') || '[]') as Reservation[];
-        setReservations(storedReservations);
+        const { data, error } = await supabase
+          .from('reservations')
+          .select('*')
+          .order('created_at', { ascending: false });
+        
+        if (error) {
+          throw error;
+        }
+        
+        setReservations(data as Reservation[]);
       } catch (error) {
-        console.error('Failed to fetch reservations:', error);
+        console.error('Erro ao buscar reservas:', error);
+        toast({
+          title: 'Erro',
+          description: 'Não foi possível carregar as reservas.',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchReservations();
-  }, []);
+  }, [authState.isAuthenticated]);
 
-  const updateReservationStatus = (id: string, status: 'confirmed' | 'rejected' | 'completed') => {
-    const updatedReservations = reservations.map((res) => {
-      if (res.id === id) {
-        return { ...res, status };
-      }
-      return res;
-    });
+  const updateReservationStatus = async (id: string, status: 'confirmed' | 'rejected' | 'completed') => {
+    try {
+      const { error } = await supabase
+        .from('reservations')
+        .update({ status })
+        .eq('id', id);
+        
+      if (error) throw error;
 
-    setReservations(updatedReservations);
-    localStorage.setItem('reservations', JSON.stringify(updatedReservations));
+      setReservations(prev => 
+        prev.map((res) => {
+          if (res.id === id) {
+            return { ...res, status };
+          }
+          return res;
+        })
+      );
 
-    const statusMessages = {
-      confirmed: 'Reserva confirmada com sucesso!',
-      rejected: 'Reserva rejeitada.',
-      completed: 'Reserva marcada como concluída!'
-    };
+      const statusMessages = {
+        confirmed: 'Reserva confirmada com sucesso!',
+        rejected: 'Reserva rejeitada.',
+        completed: 'Reserva marcada como concluída!'
+      };
 
-    toast({
-      title: statusMessages[status],
-      description: `A reserva foi ${status === 'confirmed' ? 'confirmada' : status === 'rejected' ? 'rejeitada' : 'concluída'}.`,
-    });
+      toast({
+        title: statusMessages[status],
+        description: `A reserva foi ${status === 'confirmed' ? 'confirmada' : status === 'rejected' ? 'rejeitada' : 'concluída'}.`,
+      });
+    } catch (error) {
+      console.error('Erro ao atualizar status:', error);
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível atualizar o status da reserva.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -63,16 +97,37 @@ const Dashboard: React.FC = () => {
     return date.toLocaleDateString('pt-BR');
   };
 
+  if (authState.isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <div className="flex-1 py-12 bg-gray-50 flex items-center justify-center">
+          <p>Carregando...</p>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <div className="flex-1 py-12 bg-gray-50">
         <div className="container mx-auto px-4">
-          <header className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">Painel Administrativo</h1>
-            <p className="text-gray-600">
-              Bem-vindo, {authState.admin?.name || 'Administrador'}. Gerencie as reservas do restaurante.
-            </p>
+          <header className="mb-8 flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold mb-2">Painel Administrativo</h1>
+              <p className="text-gray-600">
+                Bem-vindo, {authState.admin?.name || 'Administrador'}. Gerencie as reservas do restaurante.
+              </p>
+            </div>
+            <Button 
+              onClick={() => logout()} 
+              variant="outline" 
+              className="border-restaurant-dark-wine text-restaurant-dark-wine hover:bg-restaurant-dark-wine/10"
+            >
+              <LogOut className="mr-2 h-4 w-4" /> Sair
+            </Button>
           </header>
 
           <div className="bg-white shadow-md rounded-lg p-6">
@@ -97,6 +152,7 @@ const Dashboard: React.FC = () => {
                     setFilter={setFilter}
                     updateReservationStatus={updateReservationStatus}
                     formatDate={formatDate}
+                    isLoading={isLoading}
                   />
                 </TabsContent>
                 <TabsContent value="pending" className="mt-4">
@@ -106,6 +162,7 @@ const Dashboard: React.FC = () => {
                     setFilter={setFilter}
                     updateReservationStatus={updateReservationStatus}
                     formatDate={formatDate}
+                    isLoading={isLoading}
                   />
                 </TabsContent>
                 <TabsContent value="confirmed" className="mt-4">
@@ -115,6 +172,7 @@ const Dashboard: React.FC = () => {
                     setFilter={setFilter}
                     updateReservationStatus={updateReservationStatus}
                     formatDate={formatDate}
+                    isLoading={isLoading}
                   />
                 </TabsContent>
                 <TabsContent value="rejected" className="mt-4">
@@ -124,6 +182,7 @@ const Dashboard: React.FC = () => {
                     setFilter={setFilter}
                     updateReservationStatus={updateReservationStatus}
                     formatDate={formatDate}
+                    isLoading={isLoading}
                   />
                 </TabsContent>
                 <TabsContent value="completed" className="mt-4">
@@ -133,6 +192,7 @@ const Dashboard: React.FC = () => {
                     setFilter={setFilter}
                     updateReservationStatus={updateReservationStatus}
                     formatDate={formatDate}
+                    isLoading={isLoading}
                   />
                 </TabsContent>
                 <TabsContent value="cancelled" className="mt-4">
@@ -142,6 +202,7 @@ const Dashboard: React.FC = () => {
                     setFilter={setFilter}
                     updateReservationStatus={updateReservationStatus}
                     formatDate={formatDate}
+                    isLoading={isLoading}
                   />
                 </TabsContent>
               </Tabs>
@@ -153,5 +214,9 @@ const Dashboard: React.FC = () => {
     </div>
   );
 };
+
+// Preciso importar o componente Button e o ícone LogOut
+import { Button } from '@/components/ui/button';
+import { LogOut } from 'lucide-react';
 
 export default Dashboard;

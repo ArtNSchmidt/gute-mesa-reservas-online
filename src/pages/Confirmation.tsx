@@ -1,32 +1,44 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Reservation } from '@/types';
-import { Check } from 'lucide-react';
+import { Check, Calendar, Clock, Users, Info, ArrowLeft } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
-const Confirmation = () => {
+const Confirmation: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [reservation, setReservation] = useState<Reservation | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    // In a real app, this would be an API call
-    const fetchReservation = () => {
+    const fetchReservation = async () => {
+      if (!id) return;
+
       try {
-        const storedReservations: Reservation[] = JSON.parse(localStorage.getItem('reservations') || '[]');
-        const foundReservation = storedReservations.find(res => res.id === id);
-        
-        if (foundReservation) {
-          setReservation(foundReservation);
+        const { data, error } = await supabase
+          .from('reservations')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (error) {
+          throw error;
         }
-        
-        setLoading(false);
-      } catch (error) {
-        console.error('Failed to fetch reservation:', error);
+
+        if (data) {
+          setReservation(data as Reservation);
+        } else {
+          setError('Reserva não encontrada');
+        }
+      } catch (err: any) {
+        console.error('Error fetching reservation:', err);
+        setError(err.message || 'Erro ao buscar informações da reserva');
+      } finally {
         setLoading(false);
       }
     };
@@ -34,125 +46,135 @@ const Confirmation = () => {
     fetchReservation();
   }, [id]);
 
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('pt-BR');
+  };
+
+  const formatTime = (timeStr: string) => {
+    return timeStr.substring(0, 5); // Pegar apenas HH:MM
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col">
         <Navbar />
         <div className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <p className="text-xl">Carregando informações...</p>
-          </div>
+          <p className="text-lg">Carregando informações da reserva...</p>
         </div>
         <Footer />
       </div>
     );
   }
 
-  if (!reservation) {
+  if (error || !reservation) {
     return (
       <div className="min-h-screen flex flex-col">
         <Navbar />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center max-w-md mx-auto px-4">
-            <h2 className="text-2xl font-bold mb-4">Reserva não encontrada</h2>
-            <p className="mb-6">Não conseguimos encontrar os detalhes desta reserva. Por favor, verifique se você tem o link correto ou entre em contato conosco.</p>
-            <Button asChild>
-              <Link to="/#reservation">Nova Reserva</Link>
-            </Button>
-          </div>
+        <div className="flex-1 flex items-center justify-center p-4">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle className="text-xl text-center text-red-600">Erro</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 text-center">
+              <p>{error || 'Não foi possível encontrar esta reserva'}</p>
+              <Link to="/">
+                <Button>
+                  <ArrowLeft size={16} className="mr-2" /> Voltar para a página inicial
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
         </div>
         <Footer />
       </div>
     );
   }
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('pt-BR');
-  };
 
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <div className="flex-1 py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="max-w-2xl mx-auto">
-            <div className="bg-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
-              <Check className="h-8 w-8 text-restaurant-medium-green" />
+      <main className="flex-1 flex items-center justify-center py-12 px-4 bg-gray-50">
+        <Card className="w-full max-w-2xl shadow-lg">
+          <CardHeader className="bg-restaurant-forest-green text-white rounded-t-lg text-center p-6">
+            <div className="mb-4 flex justify-center">
+              <div className="bg-white rounded-full p-3">
+                <Check className="h-10 w-10 text-restaurant-forest-green" />
+              </div>
             </div>
-            
-            <h1 className="text-3xl md:text-4xl font-bold text-center mb-8">
-              Solicitação de Reserva Recebida!
-            </h1>
-            
-            <Card className="shadow-lg border-restaurant-medium-green/20">
-              <CardHeader className="bg-restaurant-light-green border-b border-restaurant-medium-green/20">
-                <CardTitle className="text-center text-restaurant-dark-gray">
-                  Detalhes da Reserva
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <h3 className="font-medium text-gray-500">Nome</h3>
-                    <p className="text-lg">{reservation.name}</p>
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-gray-500">Número de Pessoas</h3>
-                    <p className="text-lg">{reservation.guests}</p>
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-gray-500">Data</h3>
-                    <p className="text-lg">{formatDate(reservation.date)}</p>
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-gray-500">Hora</h3>
-                    <p className="text-lg">{reservation.time}</p>
-                  </div>
-                  <div className="sm:col-span-2">
-                    <h3 className="font-medium text-gray-500">Email</h3>
-                    <p className="text-lg">{reservation.email}</p>
-                  </div>
-                  <div className="sm:col-span-2">
-                    <h3 className="font-medium text-gray-500">Telefone</h3>
-                    <p className="text-lg">{reservation.phone}</p>
-                  </div>
-                  {reservation.special_requests && (
-                    <div className="sm:col-span-2">
-                      <h3 className="font-medium text-gray-500">Solicitações Especiais</h3>
-                      <p className="text-lg">{reservation.special_requests}</p>
-                    </div>
-                  )}
-                  <div className="sm:col-span-2 mt-2">
-                    <h3 className="font-medium text-gray-500">Status</h3>
-                    <p className="text-lg capitalize bg-yellow-100 text-yellow-800 inline-block px-3 py-1 rounded-full text-sm">
-                      {reservation.status === 'pending' ? 'Aguardando confirmação' : reservation.status}
-                    </p>
-                  </div>
+            <CardTitle className="text-2xl font-playfair">Reserva Recebida!</CardTitle>
+          </CardHeader>
+          <CardContent className="p-6 space-y-6">
+            <div className="text-center mb-4">
+              <p className="text-lg">
+                Obrigado, <span className="font-semibold">{reservation.name}</span>. 
+                Sua solicitação de reserva foi recebida com sucesso.
+              </p>
+              <p className="text-sm text-gray-600 mt-2">
+                Um e-mail de confirmação foi enviado para {reservation.email}
+              </p>
+            </div>
+
+            <div className="bg-gray-50 rounded-lg p-4">
+              <h3 className="font-semibold text-lg mb-4 text-center">Detalhes da Reserva</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="flex flex-col items-center p-3 bg-white rounded-md shadow-sm">
+                  <Calendar className="h-6 w-6 text-restaurant-forest-green mb-2" />
+                  <span className="text-sm text-gray-500">Data</span>
+                  <span className="font-medium">{formatDate(reservation.date)}</span>
                 </div>
                 
-                <div className="mt-8 border-t border-gray-200 pt-6">
-                  <div className="text-center space-y-6">
-                    <p>
-                      Obrigado por escolher a Taberna do Gute! Entraremos em contato por email em breve para confirmar sua reserva.
-                    </p>
-                    <Button asChild>
-                      <Link to="/" className="bg-restaurant-dark-teal hover:bg-restaurant-dark-gray">
-                        Voltar para a página inicial
-                      </Link>
-                    </Button>
+                <div className="flex flex-col items-center p-3 bg-white rounded-md shadow-sm">
+                  <Clock className="h-6 w-6 text-restaurant-forest-green mb-2" />
+                  <span className="text-sm text-gray-500">Horário</span>
+                  <span className="font-medium">{formatTime(reservation.time)}</span>
+                </div>
+                
+                <div className="flex flex-col items-center p-3 bg-white rounded-md shadow-sm">
+                  <Users className="h-6 w-6 text-restaurant-forest-green mb-2" />
+                  <span className="text-sm text-gray-500">Pessoas</span>
+                  <span className="font-medium">{reservation.guests}</span>
+                </div>
+              </div>
+
+              {reservation.special_requests && (
+                <div className="mt-4 p-3 bg-white rounded-md shadow-sm flex">
+                  <Info className="h-5 w-5 text-restaurant-forest-green mr-2 flex-shrink-0" />
+                  <div>
+                    <span className="text-sm text-gray-500 block">Solicitações especiais</span>
+                    <span className="text-sm">{reservation.special_requests}</span>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-            
-            <div className="mt-8 text-center text-gray-500 text-sm">
-              <p>Em caso de dúvidas, entre em contato pelo telefone (85) 99999-9999</p>
-              <p>Número de confirmação: {reservation.id}</p>
+              )}
             </div>
-          </div>
-        </div>
-      </div>
+
+            <div className="bg-gray-50 rounded-lg p-4">
+              <h3 className="font-semibold text-lg mb-2">Status: <span className="text-restaurant-forest-green">
+                {reservation.status === 'pending' ? 'Pendente' : 
+                 reservation.status === 'confirmed' ? 'Confirmada' : 
+                 reservation.status === 'rejected' ? 'Rejeitada' : 
+                 reservation.status === 'completed' ? 'Concluída' : 'Cancelada'}
+              </span></h3>
+              <p className="text-sm">
+                {reservation.status === 'pending' ? 
+                  'Aguarde a confirmação do restaurante. Entraremos em contato em breve.' : 
+                  reservation.status === 'confirmed' ? 
+                  'Sua reserva foi confirmada! Esperamos você no restaurante.' :
+                  'Consulte seu email para mais informações sobre sua reserva.'}
+              </p>
+            </div>
+
+            <div className="text-center pt-4">
+              <Link to="/">
+                <Button variant="outline" className="border-restaurant-forest-green text-restaurant-forest-green hover:bg-restaurant-forest-green/10">
+                  <ArrowLeft size={16} className="mr-2" /> Voltar para a página inicial
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </main>
       <Footer />
     </div>
   );

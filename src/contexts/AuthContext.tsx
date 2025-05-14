@@ -28,35 +28,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const { data: { session } } = await supabase.auth.getSession();
         
         if (session) {
-          // Verificar se o usuário é admin
-          const { data: profileData, error: profileError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-            
-          if (profileError) throw profileError;
-          
-          if (profileData && profileData.role === 'admin') {
-            const admin: Admin = {
-              email: profileData.email,
-              name: profileData.name || 'Administrador'
-            };
-            
-            setAuthState({
-              admin,
-              isAuthenticated: true,
-              isLoading: false
-            });
-          } else {
-            // Se não for admin, deslogar
-            await supabase.auth.signOut();
-            setAuthState({
-              admin: null,
-              isAuthenticated: false,
-              isLoading: false
-            });
-          }
+          await verifyAdminAndSetState(session.user.id);
         } else {
           setAuthState({
             admin: null,
@@ -82,51 +54,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setAuthState(prev => ({ ...prev, isLoading: true }));
         
         if (event === 'SIGNED_IN' && session) {
-          try {
-            // Verificar se o usuário é admin ao fazer login
-            const { data: profileData, error: profileError } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', session.user.id)
-              .single();
-              
-            if (profileError) throw profileError;
-            
-            if (profileData && profileData.role === 'admin') {
-              const admin: Admin = {
-                email: profileData.email,
-                name: profileData.name || 'Administrador'
-              };
-              
-              setAuthState({
-                admin,
-                isAuthenticated: true,
-                isLoading: false
-              });
-            } else {
-              // Se não for admin, deslogar
-              await supabase.auth.signOut();
-              
-              toast({
-                title: "Acesso negado",
-                description: "Você não tem permissão para acessar o painel administrativo.",
-                variant: "destructive"
-              });
-              
-              setAuthState({
-                admin: null,
-                isAuthenticated: false,
-                isLoading: false
-              });
-            }
-          } catch (error) {
-            console.error('Erro ao verificar perfil:', error);
-            setAuthState({
-              admin: null,
-              isAuthenticated: false,
-              isLoading: false
-            });
-          }
+          await verifyAdminAndSetState(session.user.id);
         } else if (event === 'SIGNED_OUT') {
           setAuthState({
             admin: null,
@@ -141,6 +69,55 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       subscription.unsubscribe();
     };
   }, [navigate]);
+
+  // Função auxiliar para verificar se o usuário é admin
+  const verifyAdminAndSetState = async (userId: string) => {
+    try {
+      // Verificar se o usuário é admin
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+        
+      if (profileError) throw profileError;
+      
+      if (profileData && profileData.role === 'admin') {
+        const admin: Admin = {
+          email: profileData.email,
+          name: profileData.name || 'Administrador'
+        };
+        
+        setAuthState({
+          admin,
+          isAuthenticated: true,
+          isLoading: false
+        });
+      } else {
+        // Se não for admin, deslogar
+        await supabase.auth.signOut();
+        
+        toast({
+          title: "Acesso negado",
+          description: "Você não tem permissão para acessar o painel administrativo.",
+          variant: "destructive"
+        });
+        
+        setAuthState({
+          admin: null,
+          isAuthenticated: false,
+          isLoading: false
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao verificar perfil:', error);
+      setAuthState({
+        admin: null,
+        isAuthenticated: false,
+        isLoading: false
+      });
+    }
+  };
 
   const login = async (email: string, password: string): Promise<void> => {
     try {
@@ -161,6 +138,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         navigate('/admin/dashboard');
       }
     } catch (error: any) {
+      console.error('Login error:', error);
       toast({
         variant: "destructive",
         title: "Erro de login",

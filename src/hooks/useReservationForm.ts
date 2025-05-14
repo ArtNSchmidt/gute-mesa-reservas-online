@@ -1,95 +1,142 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { toast } from '@/components/ui/use-toast';
+import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
+import { ReservationFormData } from '@/types';
+import { v4 as uuidv4 } from 'uuid';
+import { toast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
-// Schema de validação com Zod
-const reservationFormSchema = z.object({
-  name: z.string().min(3, { message: 'Nome deve ter pelo menos 3 caracteres' }),
-  email: z.string().email({ message: 'Email inválido' }),
-  phone: z.string().min(10, { message: 'Telefone inválido' }),
-  date: z.string().min(1, { message: 'Data é obrigatória' }),
-  time: z.string().min(1, { message: 'Horário é obrigatório' }),
-  guests: z.coerce.number().min(1).max(20, { message: 'Máximo de 20 pessoas' }),
-  special_requests: z.string().optional(),
+const reservationSchema = z.object({
+  name: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres'),
+  email: z.string().email('Email inválido'),
+  phone: z.string().min(10, 'Telefone inválido').max(15, 'Telefone inválido'),
+  date: z.string().refine(val => {
+    const selectedDate = new Date(val);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return selectedDate >= today;
+  }, { message: 'A data deve ser hoje ou no futuro' }),
+  time: z.string().min(1, 'Horário é obrigatório'),
+  guests: z.number().min(1, 'Mínimo de 1 convidado').max(20, 'Máximo de 20 convidados'),
+  special_requests: z.string().optional()
 });
 
-export type ReservationFormValues = z.infer<typeof reservationFormSchema>;
-
-export function useReservationForm() {
+export const useReservationForm = () => {
   const navigate = useNavigate();
+  
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Get today's date in YYYY-MM-DD format for min date
-  const today = new Date().toISOString().split('T')[0];
-  
-  // Get date 3 months from now for max date
+  // Get today's date and 3 months from now for date picker boundaries
+  const today = new Date();
   const maxDate = new Date();
-  maxDate.setMonth(maxDate.getMonth() + 3);
+  maxDate.setMonth(today.getMonth() + 3);
+  
+  const todayString = today.toISOString().split('T')[0];
   const maxDateString = maxDate.toISOString().split('T')[0];
 
-  // Inicializa o React Hook Form
-  const form = useForm<ReservationFormValues>({
-    resolver: zodResolver(reservationFormSchema),
+  const form = useForm<ReservationFormData>({
+    resolver: zodResolver(reservationSchema),
     defaultValues: {
       name: '',
       email: '',
       phone: '',
-      date: '',
-      time: '',
-      guests: 1,
+      date: todayString,
+      time: '19:00',
+      guests: 2,
       special_requests: ''
     }
   });
 
-  const handleSubmit = form.handleSubmit((formData) => {
-    setIsSubmitting(true);
+  const formState = form.formState;
+  const [formData, setFormData] = useState<ReservationFormData>(form.getValues());
 
-    // In a real application, this would be an API call
-    setTimeout(() => {
-      // Create reservation object with all data
-      const reservationData = {
-        ...formData,
-        id: `res-${Date.now()}`,
-        status: 'pending',
-        createdAt: new Date().toISOString()
-      };
-      
-      // Get existing reservations from localStorage or initialize empty array
-      const existingReservations = JSON.parse(localStorage.getItem('reservations') || '[]');
-      
-      // Add new reservation
-      localStorage.setItem('reservations', JSON.stringify([...existingReservations, reservationData]));
-      
-      setIsSubmitting(false);
-      toast({
-        title: "Solicitação enviada!",
-        description: "Sua reserva foi recebida e está em análise.",
-      });
-      
-      // Redirect to confirmation page with reservation ID
-      navigate(`/confirmation/${reservationData.id}`);
-    }, 1500);
-  });
-
-  // Para manter compatibilidade com componentes existentes
-  const formData = {
-    name: form.watch('name'),
-    email: form.watch('email'),
-    phone: form.watch('phone'),
-    date: form.watch('date'),
-    time: form.watch('time'),
-    guests: form.watch('guests'),
-    special_requests: form.watch('special_requests')
-  };
-
-  // Função de manipulação de mudanças para manter compatibilidade com componentes existentes
+  // Handle form changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    form.setValue(name as keyof ReservationFormValues, value);
+    
+    let parsedValue: any = value;
+    if (name === 'guests') {
+      parsedValue = parseInt(value, 10);
+    }
+    
+    setFormData(prev => ({
+      ...prev,
+      [name]: parsedValue
+    }));
+    
+    form.setValue(name as keyof ReservationFormData, parsedValue);
+  };
+
+  // Handle form submission
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      const validatedData = await form.trigger();
+      
+      if (!validatedData) {
+        // Mostrar erro de validação
+        toast({
+          variant: "destructive",
+          title: "Erro na validação",
+          description: "Por favor, verifique os campos do formulário.",
+        });
+        return;
+      }
+      
+      setIsSubmitting(true);
+      
+      // Valores do formulário
+      const values = form.getValues();
+      
+      // Criar ID para a reserva
+      const id = uuidv4();
+      
+      const newReservation = {
+        id,
+        user_id: id, // Usar o mesmo ID para usuários não autenticados
+        name: values.name,
+        email: values.email,
+        phone: values.phone,
+        date: values.date,
+        time: values.time,
+        guests: values.guests,
+        special_requests: values.special_requests || null,
+        status: 'pending',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      
+      // Salvar no Supabase
+      const { error } = await supabase
+        .from('reservations')
+        .insert([newReservation]);
+        
+      if (error) throw error;
+      
+      // Mostrar confirmação
+      toast({
+        title: "Reserva enviada!",
+        description: "Sua reserva foi recebida. Aguarde nossa confirmação em breve.",
+      });
+      
+      // Redirecionar para página de confirmação
+      navigate(`/confirmation/${id}`);
+      
+    } catch (error) {
+      console.error('Error submitting reservation:', error);
+      
+      toast({
+        variant: "destructive",
+        title: "Erro ao enviar reserva",
+        description: "Ocorreu um problema ao processar sua reserva. Tente novamente mais tarde.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return {
@@ -98,8 +145,10 @@ export function useReservationForm() {
     isSubmitting,
     handleChange,
     handleSubmit,
-    today,
+    today: todayString,
     maxDateString,
-    formState: form.formState,
+    formState
   };
-}
+};
+
+export default useReservationForm;

@@ -41,17 +41,10 @@ const Login: React.FC = () => {
     
     try {
       await login(email, password);
-      toast({
-        title: "Login bem-sucedido",
-        description: "Redirecionando para o painel administrativo"
-      });
+      // A navegação é feita dentro da função login em AuthContext
     } catch (error) {
       console.error('Login failed:', error);
-      toast({
-        title: "Falha no login",
-        description: "Verifique suas credenciais e tente novamente",
-        variant: "destructive"
-      });
+      // O toast de erro é exibido dentro da função login em AuthContext
     } finally {
       setIsLoading(false);
     }
