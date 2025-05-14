@@ -13,12 +13,21 @@ const Navbar = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  const scrollToSection = (sectionId: string, event: React.MouseEvent) => {
+    event.preventDefault();
+    const section = document.getElementById(sectionId);
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth' });
+      if (isMenuOpen) setIsMenuOpen(false);
+    }
+  };
+
   const navItems = [
-    { text: 'Início', href: '/' },
-    { text: 'Cardápio', href: '/menu' },
-    { text: 'Sobre', href: '/#about' },
-    { text: 'Galeria', href: '/#gallery' },
-    { text: 'Reservas', href: '/#reservations' },
+    { text: 'Início', href: '/', isScroll: false },
+    { text: 'Cardápio', href: '/menu', isScroll: false },
+    { text: 'Sobre', href: '#about', isScroll: true },
+    { text: 'Galeria', href: '#gallery', isScroll: true },
+    { text: 'Reservas', href: '#reservations', isScroll: true },
   ];
 
   return (
@@ -45,14 +54,14 @@ const Navbar = () => {
               <div className="fixed top-16 left-0 right-0 bg-restaurant-dark-wine p-4 animate-slide-in">
                 <nav className="flex flex-col space-y-4">
                   {navItems.map((item, index) => (
-                    <Link 
+                    <a 
                       key={index}
-                      to={item.href}
+                      href={item.href}
                       className="text-white hover:text-restaurant-lime-green py-2 border-b border-restaurant-forest-green/30"
-                      onClick={() => setIsMenuOpen(false)}
+                      onClick={(e) => item.isScroll ? scrollToSection(item.href.substring(1), e) : setIsMenuOpen(false)}
                     >
                       {item.text}
-                    </Link>
+                    </a>
                   ))}
                 </nav>
               </div>
@@ -61,16 +70,32 @@ const Navbar = () => {
         ) : (
           <nav className="hidden md:flex items-center space-x-8">
             {navItems.map((item, index) => (
-              <Link 
-                key={index}
-                to={item.href}
-                className="text-white hover:text-restaurant-lime-green transition-colors"
-              >
-                {item.text}
-              </Link>
+              item.isScroll ? (
+                <a
+                  key={index}
+                  href={item.href}
+                  className="text-white hover:text-restaurant-lime-green transition-colors"
+                  onClick={(e) => scrollToSection(item.href.substring(1), e)}
+                >
+                  {item.text}
+                </a>
+              ) : (
+                <Link 
+                  key={index}
+                  to={item.href}
+                  className="text-white hover:text-restaurant-lime-green transition-colors"
+                >
+                  {item.text}
+                </Link>
+              )
             ))}
             <Button className="bg-restaurant-lime-green hover:bg-restaurant-light-green text-restaurant-dark-wine hover:text-restaurant-dark-wine font-medium">
-              <Link to="/#reservations">Reservar Mesa</Link>
+              <a 
+                href="#reservations" 
+                onClick={(e) => scrollToSection('reservations', e)}
+              >
+                Reservar Mesa
+              </a>
             </Button>
           </nav>
         )}
