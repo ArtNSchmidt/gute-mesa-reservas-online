@@ -10,7 +10,7 @@ import {
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 const Gallery: React.FC = () => {
-  // Novas imagens do restaurante
+  // Imagens do restaurante
   const images = [
     {
       url: "/lovable-uploads/5f91b079-b6a8-48e7-853b-1bf1de39d9ab.png",
@@ -45,23 +45,27 @@ const Gallery: React.FC = () => {
   ];
 
   return (
-    <section id="gallery" className="py-20 bg-gray-50">
-      <div className="container mx-auto px-4">
-        <h2 className="section-heading centered-section-heading text-center mb-10">Galeria</h2>
+    <section id="gallery" className="py-24 bg-gray-50 relative overflow-hidden">
+      {/* Elementos decorativos */}
+      <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-gute-soft-pink/10 z-0"></div>
+      <div className="absolute bottom-0 left-0 w-80 h-80 rounded-full bg-gute-soft-green/10 z-0"></div>
+      
+      <div className="container mx-auto px-4 relative z-10">
+        <h2 className="section-heading centered-section-heading text-center text-gute-dark-blue mb-16">Nossa Galeria</h2>
         
-        <div className="hidden md:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="hidden md:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {images.map((image, index) => (
             <div 
               key={index} 
-              className="relative group overflow-hidden rounded-lg shadow-md h-64"
+              className="relative group overflow-hidden rounded-xl shadow-elegant h-80 card-hover"
             >
               <img 
                 src={image.url} 
                 alt={image.alt} 
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                <h3 className="text-white font-bold text-lg">{image.title}</h3>
+              <div className="absolute inset-0 bg-gradient-to-t from-gute-dark-blue/90 via-gute-dark-blue/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-6">
+                <h3 className="text-white font-cormorant font-semibold text-2xl">{image.title}</h3>
               </div>
             </div>
           ))}
@@ -73,7 +77,7 @@ const Gallery: React.FC = () => {
             <CarouselContent>
               {images.map((image, index) => (
                 <CarouselItem key={index}>
-                  <div className="relative overflow-hidden rounded-lg shadow-md">
+                  <div className="relative overflow-hidden rounded-xl shadow-elegant">
                     <AspectRatio ratio={4/3}>
                       <img 
                         src={image.url} 
@@ -81,15 +85,15 @@ const Gallery: React.FC = () => {
                         className="w-full h-full object-cover"
                       />
                     </AspectRatio>
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-4">
-                      <h3 className="text-white font-bold text-lg">{image.title}</h3>
+                    <div className="absolute inset-0 bg-gradient-to-t from-gute-dark-blue/80 to-transparent flex items-end p-6">
+                      <h3 className="text-white font-cormorant font-semibold text-2xl">{image.title}</h3>
                     </div>
                   </div>
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious className="left-2" />
-            <CarouselNext className="right-2" />
+            <CarouselPrevious className="left-2 bg-white/80 text-gute-dark-blue hover:bg-white" />
+            <CarouselNext className="right-2 bg-white/80 text-gute-dark-blue hover:bg-white" />
           </Carousel>
         </div>
       </div>

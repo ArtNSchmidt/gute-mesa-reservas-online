@@ -8,18 +8,29 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 const Menu = () => {
   return (
-    <div className="min-h-screen flex flex-col bg-[#fafafa]">
+    <div className="min-h-screen flex flex-col bg-white">
       <Navbar />
       
-      <div className="flex-grow">
+      <div className="flex-grow pt-20">
         {/* Hero Section */}
-        <div className="relative bg-white border-b border-neutral-200">
-          <div className="container mx-auto px-4 py-16 text-center">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-playfair font-medium text-neutral-800 mb-2">
-              Cardápio
-            </h1>
-            <p className="text-lg text-neutral-500">Taberna do Gute</p>
+        <div className="relative bg-gute-dark-blue py-28 overflow-hidden">
+          <div className="absolute inset-0 z-0 opacity-30">
+            <img 
+              src="/lovable-uploads/96096df2-e5bf-403c-92fd-3834f4e08e59.png" 
+              alt="Mesa com pratos tradicionais alemães" 
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-gute-dark-blue via-gute-dark-blue/90 to-gute-dark-blue"></div>
           </div>
+          
+          <div className="container mx-auto px-4 text-center relative z-10">
+            <h1 className="text-5xl md:text-6xl font-cormorant font-bold text-white mb-4">
+              Nosso Cardápio
+            </h1>
+            <p className="text-xl text-gute-light-yellow font-cormorant">Uma experiência única de sabores tradicionais</p>
+          </div>
+          
+          <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white to-transparent"></div>
         </div>
 
         {/* Menu Content */}
@@ -77,7 +88,7 @@ const Menu = () => {
             />
           </MenuSection>
           
-          <div className="text-center mt-4 mb-12 text-neutral-500 italic text-sm">
+          <div className="text-center mt-4 mb-16 text-gray-500 italic text-sm bg-gray-50 rounded-lg py-3">
             <p>Meia porção disponível</p>
             <p>Uma porção e meia disponível</p>
           </div>

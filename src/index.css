@@ -1,5 +1,5 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Roboto:wght@300;400;500;700&family=Montserrat:wght@300;400;500;600&family=Cormorant+Garamond:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -16,10 +16,10 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 222.2 47.4% 11.2%;
+    --primary: 228 57% 36%;
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 210 40% 96.1%;
+    --secondary: 143 22% 54%;
     --secondary-foreground: 222.2 47.4% 11.2%;
 
     --muted: 210 40% 96.1%;
@@ -92,22 +92,21 @@
   }
 
   body {
-    @apply bg-background text-foreground font-roboto;
+    @apply bg-background text-foreground font-montserrat;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-playfair;
+    @apply font-cormorant font-semibold;
   }
 }
 
-/* Custom styles for restaurant website */
-.hero-pattern {
-  background-color: #2e3338;
-  background-image: url("data:image/svg+xml,%3Csvg width='52' height='26' viewBox='0 0 52 26' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23c0da74' fill-opacity='0.15'%3E%3Cpath d='M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414z' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+/* Estilos personalizados para Taberna do Gute */
+.hero-gradient {
+  background-image: linear-gradient(to right, rgba(14, 19, 31, 0.95), rgba(14, 19, 31, 0.8), rgba(14, 19, 31, 0.6), rgba(14, 19, 31, 0.2), transparent);
 }
 
 .section-heading {
-  @apply font-playfair text-3xl md:text-4xl lg:text-5xl font-bold relative pb-4 mb-8;
+  @apply font-cormorant text-3xl md:text-4xl lg:text-5xl font-bold relative pb-4 mb-8;
 }
 
 .section-heading::after {
@@ -117,7 +116,7 @@
   left: 0;
   width: 80px;
   height: 3px;
-  background-color: #C0DA74;
+  background-color: #3454D1;
 }
 
 .centered-section-heading::after {
@@ -132,7 +131,7 @@
 /* Melhorias de acessibilidade e elementos de formulário */
 @layer components {
   .form-input {
-    @apply w-full rounded-md border border-gray-300 px-4 py-2 text-base focus:border-restaurant-forest-green focus:ring focus:ring-restaurant-forest-green/20 outline-none transition-colors;
+    @apply w-full rounded-md border border-gray-300 px-4 py-2 text-base focus:border-gute-royal-blue focus:ring focus:ring-gute-royal-blue/20 outline-none transition-colors;
   }
 
   .btn {
@@ -140,11 +139,11 @@
   }
 
   .btn-primary {
-    @apply bg-restaurant-forest-green text-white hover:bg-restaurant-moss-green;
+    @apply bg-gute-royal-blue text-white hover:bg-gute-royal-blue/90;
   }
 
   .btn-secondary {
-    @apply bg-restaurant-light-green text-restaurant-dark-wine hover:bg-restaurant-lime-green;
+    @apply bg-gute-soft-green text-gute-dark-blue hover:bg-gute-soft-green/90;
   }
 
   .badge {
@@ -152,19 +151,27 @@
   }
 
   .badge-green {
-    @apply bg-green-100 text-green-800;
+    @apply bg-gute-soft-green/20 text-gute-soft-green;
   }
 
   .badge-yellow {
-    @apply bg-yellow-100 text-yellow-800;
+    @apply bg-gute-light-yellow/20 text-gute-dark-blue;
   }
 
   .badge-red {
-    @apply bg-red-100 text-red-800;
+    @apply bg-gute-soft-pink/20 text-gute-soft-pink;
   }
 
   .card-hover {
-    @apply transition-all hover:shadow-md hover:-translate-y-1;
+    @apply transition-all hover:shadow-elegant hover:-translate-y-1;
+  }
+  
+  .elegant-card {
+    @apply bg-white rounded-lg shadow-elegant border border-gray-100 overflow-hidden transition-all hover:shadow-lg;
+  }
+  
+  .menu-item {
+    @apply border-b border-gute-soft-pink/10 py-4 px-2 transition-colors hover:bg-gute-soft-green/5;
   }
 }
 
@@ -185,4 +192,27 @@
 
 .animate-slide-in {
   animation: slideIn 0.5s ease-out forwards;
+}
+
+/* Efeitos de hover elegantes */
+.hover-underline-animation {
+  position: relative;
+}
+
+.hover-underline-animation::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  transform: scaleX(0);
+  height: 2px;
+  bottom: -2px;
+  left: 0;
+  background-color: currentColor;
+  transform-origin: bottom right;
+  transition: transform 0.3s ease-out;
+}
+
+.hover-underline-animation:hover::after {
+  transform: scaleX(1);
+  transform-origin: bottom left;
 }

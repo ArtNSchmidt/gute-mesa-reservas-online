@@ -63,13 +63,13 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Paleta de cores do restaurante
-				restaurant: {
-					'light-green': '#94AE89',
-					'dark-wine': '#241623',
-					'lime-green': '#C0DA74',
-					'forest-green': '#3A5A40',
-					'moss-green': '#2e5339',
+				// Nova paleta de cores sofisticada
+				gute: {
+					'dark-blue': '#0E131F',
+					'royal-blue': '#3454D1',
+					'soft-green': '#80B192',
+					'light-yellow': '#FFED65',
+					'soft-pink': '#F3B3A6',
 				}
 			},
 			borderRadius: {
@@ -110,12 +110,15 @@ export default {
 				'slide-in': 'slide-in 0.5s ease-out'
 			},
 			fontFamily: {
-				'playfair': ['Playfair Display', 'serif'],
-				'roboto': ['Roboto', 'sans-serif']
+				'playfair': ['"Playfair Display"', 'serif'],
+				'roboto': ['Roboto', 'sans-serif'],
+				'montserrat': ['Montserrat', 'sans-serif'],
+				'cormorant': ['"Cormorant Garamond"', 'serif']
 			},
 			boxShadow: {
 				'soft': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-				'card': '0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+				'card': '0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+				'elegant': '0 10px 30px -3px rgba(14, 19, 31, 0.1), 0 4px 6px -2px rgba(14, 19, 31, 0.05)'
 			}
 		}
 	},

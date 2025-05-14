@@ -17,15 +17,15 @@ const MenuItem: React.FC<MenuItemProps> = ({
   return (
     <Card 
       className={cn(
-        "border-none shadow-none bg-transparent hover:bg-black/[0.02] transition-colors", 
+        "border border-gray-100 shadow-sm hover:shadow-elegant bg-white hover:bg-gray-50/80 transition-all duration-300 rounded-lg", 
         className
       )}
     >
       <CardHeader className="p-4">
-        <CardTitle className="text-xl font-medium text-neutral-800">{title}</CardTitle>
+        <CardTitle className="text-xl font-medium font-cormorant text-gute-dark-blue">{title}</CardTitle>
       </CardHeader>
       {description && (
-        <CardContent className="pt-0 px-4 pb-4 text-neutral-600 text-sm">
+        <CardContent className="pt-0 px-4 pb-4 text-gray-600 text-sm">
           <p>{description}</p>
         </CardContent>
       )}
