@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { Button } from './ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -8,6 +8,8 @@ import { useIsMobile } from '@/hooks/use-mobile';
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -16,12 +18,28 @@ const Navbar = () => {
   const scrollToSection = (sectionId: string, event: React.MouseEvent) => {
     event.preventDefault();
     
-    if (sectionId === 'top') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Se estiver em uma página diferente da inicial, primeiro navega para a página inicial
+    if (location.pathname !== '/') {
+      navigate('/');
+      // Usamos setTimeout para garantir que a navegação termine antes de tentar rolar
+      setTimeout(() => {
+        if (sectionId === 'top') {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          const section = document.getElementById(sectionId);
+          if (section) {
+            section.scrollIntoView({ behavior: 'smooth' });
+          }
+        }
+      }, 100);
     } else {
-      const section = document.getElementById(sectionId);
-      if (section) {
-        section.scrollIntoView({ behavior: 'smooth' });
+      if (sectionId === 'top') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        const section = document.getElementById(sectionId);
+        if (section) {
+          section.scrollIntoView({ behavior: 'smooth' });
+        }
       }
     }
     
