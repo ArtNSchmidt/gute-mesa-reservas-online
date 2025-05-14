@@ -89,6 +89,11 @@ const Footer: React.FC = () => {
                     Acessibilidade
                   </Link>
                 </li>
+                <li>
+                  <Link to="/admin/login" className="text-gray-400 hover:text-restaurant-lime-green transition-colors opacity-70">
+                    Login
+                  </Link>
+                </li>
               </ul>
             </div>
           </div>
