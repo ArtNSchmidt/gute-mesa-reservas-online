@@ -6,15 +6,18 @@ import PersonalInfoFields from '@/components/reservation/PersonalInfoFields';
 import ReservationDetailFields from '@/components/reservation/ReservationDetailFields';
 import SpecialRequestsField from '@/components/reservation/SpecialRequestsField';
 import SubmitButton from '@/components/reservation/SubmitButton';
+import { Form } from '@/components/ui/form';
 
 const ReservationForm: React.FC = () => {
   const {
+    form,
     formData,
     isSubmitting,
     handleChange,
     handleSubmit,
     today,
-    maxDateString
+    maxDateString,
+    formState
   } = useReservationForm();
 
   return (
@@ -25,28 +28,32 @@ const ReservationForm: React.FC = () => {
         <div className="max-w-3xl mx-auto">
           <Card className="bg-white shadow-lg">
             <CardContent className="p-6 md:p-8">
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <PersonalInfoFields 
-                    formData={formData} 
-                    handleChange={handleChange} 
+              <Form {...form}>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <PersonalInfoFields 
+                      formData={formData} 
+                      handleChange={handleChange}
+                      errors={formState.errors}
+                    />
+                    
+                    <ReservationDetailFields 
+                      formData={formData} 
+                      handleChange={handleChange} 
+                      today={today} 
+                      maxDateString={maxDateString}
+                      errors={formState.errors} 
+                    />
+                  </div>
+                  
+                  <SpecialRequestsField 
+                    value={formData.special_requests || ''} 
+                    onChange={handleChange} 
                   />
                   
-                  <ReservationDetailFields 
-                    formData={formData} 
-                    handleChange={handleChange} 
-                    today={today} 
-                    maxDateString={maxDateString} 
-                  />
-                </div>
-                
-                <SpecialRequestsField 
-                  value={formData.special_requests || ''} 
-                  onChange={handleChange} 
-                />
-                
-                <SubmitButton isSubmitting={isSubmitting} />
-              </form>
+                  <SubmitButton isSubmitting={isSubmitting} />
+                </form>
+              </Form>
             </CardContent>
           </Card>
         </div>

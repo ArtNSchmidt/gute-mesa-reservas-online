@@ -2,6 +2,8 @@
 import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { FieldErrors } from 'react-hook-form';
+import { ReservationFormValues } from '@/hooks/useReservationForm';
 
 interface ReservationDetailFieldsProps {
   formData: {
@@ -12,13 +14,15 @@ interface ReservationDetailFieldsProps {
   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
   today: string;
   maxDateString: string;
+  errors?: FieldErrors<ReservationFormValues>;
 }
 
 const ReservationDetailFields: React.FC<ReservationDetailFieldsProps> = ({ 
   formData, 
   handleChange, 
   today, 
-  maxDateString 
+  maxDateString,
+  errors
 }) => {
   return (
     <>
@@ -30,7 +34,7 @@ const ReservationDetailFields: React.FC<ReservationDetailFieldsProps> = ({
           value={formData.guests}
           onChange={handleChange}
           required
-          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          className={`flex h-10 w-full rounded-md border ${errors?.guests ? "border-red-500" : "border-input"} bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50`}
         >
           {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
             <option key={num} value={num}>
@@ -39,6 +43,9 @@ const ReservationDetailFields: React.FC<ReservationDetailFieldsProps> = ({
           ))}
           <option value="11">Mais de 10 pessoas</option>
         </select>
+        {errors?.guests && (
+          <p className="text-red-500 text-sm mt-1">{errors.guests.message}</p>
+        )}
       </div>
       
       <div className="space-y-2">
@@ -52,7 +59,11 @@ const ReservationDetailFields: React.FC<ReservationDetailFieldsProps> = ({
           value={formData.date}
           onChange={handleChange}
           required
+          className={errors?.date ? "border-red-500" : ""}
         />
+        {errors?.date && (
+          <p className="text-red-500 text-sm mt-1">{errors.date.message}</p>
+        )}
       </div>
       
       <div className="space-y-2">
@@ -63,7 +74,7 @@ const ReservationDetailFields: React.FC<ReservationDetailFieldsProps> = ({
           value={formData.time}
           onChange={handleChange}
           required
-          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          className={`flex h-10 w-full rounded-md border ${errors?.time ? "border-red-500" : "border-input"} bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50`}
         >
           <option value="">Selecione o horário</option>
           {[
@@ -75,6 +86,9 @@ const ReservationDetailFields: React.FC<ReservationDetailFieldsProps> = ({
             </option>
           ))}
         </select>
+        {errors?.time && (
+          <p className="text-red-500 text-sm mt-1">{errors.time.message}</p>
+        )}
       </div>
     </>
   );

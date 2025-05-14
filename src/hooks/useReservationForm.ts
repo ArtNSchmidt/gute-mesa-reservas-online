@@ -3,30 +3,50 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
 import { ReservationFormData } from '@/types';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+
+// Schema de validação com Zod
+const reservationFormSchema = z.object({
+  name: z.string().min(3, { message: 'Nome deve ter pelo menos 3 caracteres' }),
+  email: z.string().email({ message: 'Email inválido' }),
+  phone: z.string().min(10, { message: 'Telefone inválido' }),
+  date: z.string().min(1, { message: 'Data é obrigatória' }),
+  time: z.string().min(1, { message: 'Horário é obrigatório' }),
+  guests: z.coerce.number().min(1).max(20, { message: 'Máximo de 20 pessoas' }),
+  special_requests: z.string().optional(),
+});
+
+export type ReservationFormValues = z.infer<typeof reservationFormSchema>;
 
 export function useReservationForm() {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const initialFormData: ReservationFormData = {
-    name: '',
-    email: '',
-    phone: '',
-    date: '',
-    time: '',
-    guests: 1,
-    special_requests: ''
-  };
+  // Get today's date in YYYY-MM-DD format for min date
+  const today = new Date().toISOString().split('T')[0];
+  
+  // Get date 3 months from now for max date
+  const maxDate = new Date();
+  maxDate.setMonth(maxDate.getMonth() + 3);
+  const maxDateString = maxDate.toISOString().split('T')[0];
 
-  const [formData, setFormData] = useState<ReservationFormData>(initialFormData);
+  // Inicializa o React Hook Form
+  const form = useForm<ReservationFormValues>({
+    resolver: zodResolver(reservationFormSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      phone: '',
+      date: '',
+      time: '',
+      guests: 1,
+      special_requests: ''
+    }
+  });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = form.handleSubmit((formData) => {
     setIsSubmitting(true);
 
     // In a real application, this would be an API call
@@ -54,22 +74,33 @@ export function useReservationForm() {
       // Redirect to confirmation page with reservation ID
       navigate(`/confirmation/${reservationData.id}`);
     }, 1500);
+  });
+
+  // Para manter compatibilidade com componentes existentes
+  const formData = {
+    name: form.watch('name'),
+    email: form.watch('email'),
+    phone: form.watch('phone'),
+    date: form.watch('date'),
+    time: form.watch('time'),
+    guests: form.watch('guests'),
+    special_requests: form.watch('special_requests')
   };
 
-  // Get today's date in YYYY-MM-DD format for min date
-  const today = new Date().toISOString().split('T')[0];
-  
-  // Get date 3 months from now for max date
-  const maxDate = new Date();
-  maxDate.setMonth(maxDate.getMonth() + 3);
-  const maxDateString = maxDate.toISOString().split('T')[0];
+  // Função de manipulação de mudanças para manter compatibilidade com componentes existentes
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    form.setValue(name as keyof ReservationFormValues, value);
+  };
 
   return {
+    form,
     formData,
     isSubmitting,
     handleChange,
     handleSubmit,
     today,
-    maxDateString
+    maxDateString,
+    formState: form.formState,
   };
 }
