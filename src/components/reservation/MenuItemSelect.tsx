@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -39,6 +39,10 @@ const MenuItemSelect: React.FC<MenuItemSelectProps> = ({
               key={category.name}
               value={category.name}
               className="text-sm py-2 px-4"
+              onClick={(e) => {
+                // Previne o comportamento padrão que pode causar navegação
+                e.preventDefault();
+              }}
             >
               {category.name}
             </TabsTrigger>
@@ -71,7 +75,11 @@ const MenuItemSelect: React.FC<MenuItemSelectProps> = ({
                               size="icon"
                               variant="outline"
                               className="h-8 w-8 rounded-full"
-                              onClick={() => onRemoveItem(item.id)}
+                              onClick={(e) => {
+                                e.preventDefault(); // Previne navegação
+                                onRemoveItem(item.id);
+                              }}
+                              type="button" // Explicitamente define como button para evitar submit do form
                             >
                               <Minus className="h-4 w-4" />
                             </Button>
@@ -82,7 +90,11 @@ const MenuItemSelect: React.FC<MenuItemSelectProps> = ({
                               size="icon"
                               variant="outline"
                               className="h-8 w-8 rounded-full"
-                              onClick={() => onAddItem(item)}
+                              onClick={(e) => {
+                                e.preventDefault(); // Previne navegação
+                                onAddItem(item);
+                              }}
+                              type="button" // Explicitamente define como button para evitar submit do form
                             >
                               <Plus className="h-4 w-4" />
                             </Button>
@@ -92,7 +104,11 @@ const MenuItemSelect: React.FC<MenuItemSelectProps> = ({
                             variant="outline"
                             size="sm"
                             className="rounded-full"
-                            onClick={() => onAddItem(item)}
+                            onClick={(e) => {
+                              e.preventDefault(); // Previne navegação
+                              onAddItem(item);
+                            }}
+                            type="button" // Explicitamente define como button para evitar submit do form
                           >
                             <Plus className="h-4 w-4 mr-1" /> Adicionar
                           </Button>
