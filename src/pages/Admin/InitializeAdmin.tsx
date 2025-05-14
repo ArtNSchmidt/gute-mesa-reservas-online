@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ShieldCheck } from 'lucide-react';
+import { ShieldCheck, Loader2 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
@@ -23,8 +23,11 @@ const InitializeAdmin: React.FC = () => {
     setError(null);
     
     try {
+      console.log("Iniciando criação do administrador inicial...");
       // Cria o admin e envia email de confirmação
       await createAdmin(adminEmail);
+      console.log("Administrador criado com sucesso");
+      
       setIsCreated(true);
       
       toast({
@@ -63,7 +66,9 @@ const InitializeAdmin: React.FC = () => {
             <div className="space-y-4">
               {isCreating ? (
                 <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-restaurant-forest-green mx-auto"></div>
+                  <div className="mx-auto w-12 h-12 flex items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-restaurant-forest-green" />
+                  </div>
                   <p className="mt-4">Enviando email de confirmação...</p>
                 </div>
               ) : error ? (

@@ -51,12 +51,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     
     // Ouvir mudanças de autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         console.log('Auth state changed:', event, session);
+        
+        // Importante: não fazer operações assíncronas diretamente no callback
+        // para evitar deadlocks no sistema de eventos do Supabase
         setAuthState(prev => ({ ...prev, isLoading: true }));
         
         if (session) {
-          await verifyAdminAndSetState(session.user.id);
+          // Usar setTimeout para evitar deadlocks nos eventos de autenticação
+          setTimeout(() => {
+            verifyAdminAndSetState(session.user.id);
+          }, 0);
         } else {
           setAuthState({
             admin: null,
@@ -80,7 +86,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
         
       if (profileError) throw profileError;
       
@@ -137,7 +143,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (error) throw error;
       
       if (data.user) {
-        // Verificação do perfil é feita no listener de auth state
         toast({
           title: "Login realizado com sucesso",
           description: "Bem-vindo ao painel administrativo.",
@@ -183,6 +188,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       // Se não tiver uma senha, gera uma aleatória
       const adminPassword = password || Math.random().toString(36).slice(-10);
       
+      console.log("Iniciando criação de administrador com email:", email);
+      
       // Criar o usuário com signup, isso enviará um email de confirmação
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email,
@@ -197,13 +204,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       
       if (signUpError) {
         // Traduzir mensagens de erro comuns
+        console.error("Erro no signup:", signUpError);
         if (signUpError.message?.includes('User already registered')) {
           throw new Error('Este email já está registrado no sistema.');
         }
         throw signUpError;
       }
       
-      if (!signUpData.user) {
+      if (!signUpData?.user) {
+        console.error("Nenhum usuário retornado após signup");
         throw new Error("Falha ao criar usuário");
       }
       

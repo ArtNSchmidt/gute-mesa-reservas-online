@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { User, ShieldCheck, AlertCircle } from 'lucide-react';
+import { User, ShieldCheck, AlertCircle, Loader2 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/contexts/AuthContext';
@@ -56,7 +56,7 @@ const Login: React.FC = () => {
     setIsCreatingAdmin(true);
     
     try {
-      const result = await createAdmin(newAdminEmail);
+      await createAdmin(newAdminEmail);
       
       toast({
         title: "Email de confirmação enviado",
@@ -129,7 +129,12 @@ const Login: React.FC = () => {
                 className="w-full bg-restaurant-light-green hover:bg-restaurant-forest-green transition-colors text-restaurant-dark-wine font-medium py-6"
                 disabled={isLoading}
               >
-                {isLoading ? 'Entrando...' : 'Entrar'}
+                {isLoading ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Entrando...
+                  </span>
+                ) : 'Entrar'}
               </Button>
             </form>
 
@@ -175,7 +180,12 @@ const Login: React.FC = () => {
                         disabled={isCreatingAdmin}
                         className="w-full bg-restaurant-forest-green text-white"
                       >
-                        {isCreatingAdmin ? 'Enviando...' : 'Enviar Confirmação'}
+                        {isCreatingAdmin ? (
+                          <span className="flex items-center gap-2">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Enviando...
+                          </span>
+                        ) : 'Enviar Confirmação'}
                       </Button>
                     </DialogFooter>
                   </form>
