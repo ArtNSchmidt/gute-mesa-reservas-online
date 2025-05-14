@@ -12,7 +12,7 @@ const Menu = () => {
       <Navbar />
       
       <div className="flex-grow pt-20">
-        {/* Hero Section */}
+        {/* Hero Section - Modified to use bg-gute-dark-blue without opacity */}
         <div className="relative bg-gute-dark-blue py-28 overflow-hidden">
           <div className="absolute inset-0 z-0 opacity-30">
             <img 
@@ -20,7 +20,7 @@ const Menu = () => {
               alt="Mesa com pratos tradicionais alemães" 
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-gute-dark-blue via-gute-dark-blue/90 to-gute-dark-blue"></div>
+            <div className="absolute inset-0 bg-gute-dark-blue/70"></div>
           </div>
           
           <div className="container mx-auto px-4 text-center relative z-10">
