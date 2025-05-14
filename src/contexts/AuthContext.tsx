@@ -176,8 +176,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       // Se não tiver uma senha, gera uma aleatória
       const adminPassword = password || Math.random().toString(36).slice(-10);
       
-      // 1. Verificar se o usuário já existe
-      const { data: existingUser } = await supabase.auth.admin.getUserByEmail(email);
+      // 1. Verificar se o usuário já existe usando a lista de usuários
+      const { data: { users }, error: listError } = await supabase.auth.admin.listUsers({
+        page: 1,
+        perPage: 1000
+      });
+      
+      if (listError) throw listError;
+      
+      const existingUser = users?.find(user => user.email === email);
       
       if (existingUser) {
         console.log('Usuário já existe, atualizando para admin');
