@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { toast } from '@/components/ui/use-toast';
+import { Eye, EyeOff, LogIn } from 'lucide-react';
 
 const Login: React.FC = () => {
   const { login, authState } = useAuth();
@@ -16,6 +17,7 @@ const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     if (authState.isAuthenticated) {
@@ -25,32 +27,54 @@ const Login: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!email || !password) {
+      toast({
+        title: "Erro de validação",
+        description: "Email e senha são obrigatórios",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
       await login(email, password);
+      toast({
+        title: "Login bem-sucedido",
+        description: "Redirecionando para o painel administrativo"
+      });
     } catch (error) {
       console.error('Login failed:', error);
+      toast({
+        title: "Falha no login",
+        description: "Verifique suas credenciais e tente novamente",
+        variant: "destructive"
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-white to-gray-100">
       <Navbar />
-      <div className="flex-1 flex items-center justify-center bg-gray-50 py-12 px-4">
-        <Card className="w-full max-w-md shadow-lg">
-          <CardHeader className="space-y-1 bg-[#3A5A40] text-white rounded-t-lg">
-            <CardTitle className="text-2xl font-bold">Acesso Administrativo</CardTitle>
-            <CardDescription className="text-gray-200">
+      <div className="flex-1 flex items-center justify-center p-4 sm:p-6 md:p-8">
+        <Card className="w-full max-w-md shadow-lg border-restaurant-forest-green/20">
+          <CardHeader className="space-y-1 bg-restaurant-forest-green text-white rounded-t-lg p-6">
+            <CardTitle className="text-2xl font-playfair font-bold flex items-center gap-2">
+              <LogIn size={24} />
+              Acesso Administrativo
+            </CardTitle>
+            <CardDescription className="text-gray-100">
               Entre com suas credenciais para acessar o painel
             </CardDescription>
           </CardHeader>
           <CardContent className="p-6">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email" className="text-gray-700">Email</Label>
                 <Input
                   id="email"
                   type="email"
@@ -58,21 +82,35 @@ const Login: React.FC = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="seu.email@exemplo.com"
                   required
+                  className="border-gray-300 focus:border-restaurant-forest-green focus:ring focus:ring-restaurant-forest-green/20"
                 />
               </div>
+              
               <div className="space-y-2">
-                <Label htmlFor="password">Senha</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
+                <Label htmlFor="password" className="text-gray-700">Senha</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="pr-10 border-gray-300 focus:border-restaurant-forest-green focus:ring focus:ring-restaurant-forest-green/20"
+                  />
+                  <button 
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-gray-700"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
               </div>
+              
               <Button 
                 type="submit" 
-                className="w-full bg-[#94AE89] hover:bg-[#3A5A40] transition-colors text-white"
+                className="w-full bg-restaurant-light-green hover:bg-restaurant-forest-green transition-colors text-restaurant-dark-wine font-medium py-6"
                 disabled={isLoading}
               >
                 {isLoading ? 'Carregando...' : 'Entrar'}
