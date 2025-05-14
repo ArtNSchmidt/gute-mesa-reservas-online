@@ -86,6 +86,13 @@ const Navbar = () => {
                       {item.text}
                     </a>
                   ))}
+                  <a 
+                    href="#reservation" 
+                    className="text-white hover:text-restaurant-lime-green py-2 border-b border-restaurant-forest-green/30"
+                    onClick={(e) => scrollToSection('reservation', e)}
+                  >
+                    Reservar Mesa
+                  </a>
                 </nav>
               </div>
             )}
@@ -112,13 +119,11 @@ const Navbar = () => {
                 </Link>
               )
             ))}
-            <Button className="bg-restaurant-lime-green hover:bg-restaurant-light-green text-restaurant-dark-wine hover:text-restaurant-dark-wine font-medium">
-              <a 
-                href="#reservations" 
-                onClick={(e) => scrollToSection('reservations', e)}
-              >
-                Reservar Mesa
-              </a>
+            <Button 
+              className="bg-restaurant-lime-green hover:bg-restaurant-light-green text-restaurant-dark-wine hover:text-restaurant-dark-wine font-medium"
+              onClick={(e) => scrollToSection('reservation', e)}
+            >
+              Reservar Mesa
             </Button>
           </nav>
         )}
