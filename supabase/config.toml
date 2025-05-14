@@ -3,3 +3,8 @@ project_id = "vcvlzfshobiagunbnucg"
 
 [auth.email]
 enable_confirmations = true
+enable_signup = true
+
+[auth.external_email_enabled]
+enabled = true
+
