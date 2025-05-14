@@ -11,7 +11,9 @@ const Footer: React.FC = () => {
           <div>
             <h3 className="font-cormorant text-2xl font-bold mb-6 text-white">Taberna do Gute</h3>
             <p className="mb-6 text-gray-300 leading-relaxed">
-              Uma experiência única com o melhor da culinária alemã e brasileira em um ambiente acolhedor e sofisticado.
+              Sabor, tradição e aconchego em um só lugar.
+              Inspirada na culinária alemã com um toque brasileiro, nossa taberna oferece uma experiência gastronômica única, em um ambiente acolhedor.
+              Seja para um almoço em família, um encontro entre amigos ou eventos especiais, estamos prontos para receber você.
             </p>
             <div className="flex space-x-4">
               <a href="https://facebook.com" className="bg-gute-royal-blue/20 p-3 rounded-full hover:bg-gute-royal-blue/30 transition-colors">
