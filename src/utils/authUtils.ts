@@ -69,16 +69,19 @@ export const createAdminUser = async (email: string, password?: string): Promise
     // Corrigindo o método para verificar usuários existentes
     const { data: existingUsers, error: listError } = await supabase.auth.admin.listUsers({
       page: 1,
-      perPage: 1,
+      perPage: 100, // Aumentar para garantir que podemos encontrar o usuário
     });
-    
-    // Procurar pelo usuário com o email correspondente
-    const existingUser = existingUsers?.users.find(user => user.email === email);
     
     if (listError) {
       console.error("Erro ao verificar usuários existentes:", listError);
       throw listError;
     }
+    
+    // Procurar pelo usuário com o email correspondente
+    // Definindo explicitamente o tipo para resolver o erro
+    const existingUser = existingUsers && existingUsers.users ? 
+      existingUsers.users.find(user => user.email === email) : 
+      undefined;
     
     if (existingUser) {
       console.log("Usuário já existe, enviando novo email de confirmação");
