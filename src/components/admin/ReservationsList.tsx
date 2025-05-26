@@ -25,13 +25,17 @@ const ReservationsList: React.FC<ReservationsListProps> = ({
   });
 
   if (isLoading) {
-    return <div className="text-center py-8">Carregando reservas...</div>;
+    return (
+      <div className="text-center py-12 text-[var(--brand-text-dark)]/70">
+        <p>Carregando reservas...</p> {/* Consider adding a spinner icon here later if desired */}
+      </div>
+    );
   }
 
   if (filteredReservations.length === 0) {
     return (
-      <div className="text-center py-8 bg-gray-50 rounded-md">
-        <p className="text-gray-500">
+      <div className="text-center py-12 bg-[var(--brand-background-light)] border border-dashed border-[var(--brand-primary)]/20 rounded-lg mt-4">
+        <p className="text-[var(--brand-text-dark)]/70">
           {filter === 'all' 
             ? 'Não há reservas cadastradas.' 
             : `Não há reservas com status "${filter}".`}
@@ -41,7 +45,7 @@ const ReservationsList: React.FC<ReservationsListProps> = ({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 mt-4"> {/* Added mt-4 to give some space from the tabs */}
       {filteredReservations.map(reservation => (
         <ReservationCard
           key={reservation.id}

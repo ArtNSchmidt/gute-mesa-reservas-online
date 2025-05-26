@@ -37,6 +37,22 @@
 
     --radius: 0.5rem;
 
+    /* Brand Colors */
+    --brand-verde-claro: #94AE89;
+    --brand-vinho-escuro: #241623;
+    --brand-verde-oliva: #C0DA74;
+    --brand-verde-profundo: #3A5A40;
+    --brand-verde-musgo: #2e5339;
+
+    /* Semantic Brand Colors */
+    --brand-primary: var(--brand-verde-profundo);
+    --brand-secondary: var(--brand-verde-musgo);
+    --brand-accent: var(--brand-verde-oliva);
+    --brand-text-dark: var(--brand-vinho-escuro);
+    --brand-text-light: #FFFFFF;
+    --brand-background-light: #FFFFFF; 
+    --brand-background-dark: var(--brand-vinho-escuro);
+
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
@@ -93,6 +109,7 @@
 
   body {
     @apply bg-background text-foreground font-montserrat;
+    color: var(--brand-text-dark); /* Apply base text color */
   }
 
   h1, h2, h3, h4, h5, h6 {

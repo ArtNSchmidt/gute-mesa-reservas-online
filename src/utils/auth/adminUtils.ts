@@ -7,6 +7,7 @@ import { toast } from '@/components/ui/use-toast';
  * Verifica se um ID de usuário pertence a um administrador e retorna os dados do admin
  */
 export const verifyAdminAndGetData = async (userId: string): Promise<Admin | null> => {
+  console.log(`Verifying admin status for userId: ${userId}`);
   try {
     // Verificar se o usuário é admin
     const { data: profileData, error: profileError } = await supabase
@@ -16,21 +17,28 @@ export const verifyAdminAndGetData = async (userId: string): Promise<Admin | nul
       .maybeSingle();
       
     if (profileError) {
-      console.error('Erro ao verificar perfil:', profileError);
+      console.error(`Error fetching profile for ${userId}: ${profileError.message}`);
       throw profileError;
     }
     
     // Se não encontrou perfil ou não é admin, retornar null
-    if (!profileData || profileData.role !== 'admin') {
+    if (!profileData) {
+      console.log(`Profile not found for userId: ${userId}. Returning null.`);
       return null;
     }
     
+    if (profileData.role !== 'admin') {
+      console.log(`User ${userId} is not admin. Role: ${profileData.role}. Returning null.`);
+      return null;
+    }
+    
+    console.log(`User ${userId} verified as admin. Returning admin data.`);
     return {
       email: profileData.email || '',
       name: profileData.name || 'Administrador'
     };
-  } catch (error) {
-    console.error('Erro ao verificar perfil:', error);
+  } catch (error: any) {
+    console.error(`Generic error in verifyAdminAndGetData for ${userId}: ${error.message}. Returning null.`);
     return null;
   }
 };
@@ -87,31 +95,56 @@ export const createAdminUser = async (email: string, password?: string): Promise
     
     console.log("Usuário criado com sucesso:", data.user.id);
     
-    // Atualizar o perfil do usuário para administrador - esta etapa já deve ser feita pelo trigger
-    // mas vamos garantir que o perfil exista com o papel correto
-    const { data: existingProfile } = await supabase
+    // Verificar e garantir que o perfil do usuário seja de administrador
+    console.log("Verifying profile role after admin creation for user ID:", data.user.id);
+    const { data: profileData, error: profileError } = await adminSupabase
       .from('profiles')
       .select('*')
       .eq('id', data.user.id)
       .maybeSingle();
+
+    console.log("Profile query result:", JSON.stringify(profileData));
+
+    if (profileError) {
+      console.error("Erro ao buscar perfil do novo admin:", profileError.message);
+      // Mesmo com erro, tentar garantir o perfil correto como fallback
+    }
+
+    if (!profileData || profileData.role !== 'admin') {
+      if (!profileData) {
+        console.log("Perfil não encontrado para o novo admin (trigger pode não ter executado ou falhado). Tentando criar/atualizar perfil.");
+      } else {
+        console.log(`Perfil encontrado, mas role é '${profileData.role}'. Tentando atualizar para 'admin'.`);
+      }
       
-    if (!existingProfile) {
-      const { error: profileError } = await supabase
+      const { error: upsertError } = await adminSupabase
         .from('profiles')
-        .insert({ 
-          id: data.user.id,
-          email: email,
+        .upsert({ 
+          id: data.user.id, 
+          email: email, 
           name: 'Administrador', 
           role: 'admin' 
+        }, { onConflict: 'id' });
+
+      if (upsertError) {
+        console.error("Erro ao tentar criar/atualizar perfil para admin:", upsertError.message);
+        // Considerar se deve lançar um erro aqui ou se o toast de sucesso do usuário é suficiente
+        // Por ora, o admin foi criado, mas o perfil pode não estar correto.
+        toast({
+          title: "Criação de Admin Incompleta",
+          description: `O usuário administrador ${email} foi criado, mas houve um erro ao definir seu perfil como admin. Verifique manualmente.`,
+          variant: "destructive",
         });
-      
-      if (profileError) {
-        console.error("Erro ao criar perfil:", profileError);
-        throw profileError;
+        // Não retornar a senha aqui, pois a configuração não está completa.
+        // Ou, alternativamente, logar e continuar, assumindo que o admin pode corrigir manualmente.
+        // Por ora, vamos lançar o erro para indicar que a operação não foi 100% bem-sucedida.
+        throw new Error(`Usuário admin criado, mas falha ao definir o perfil como admin: ${upsertError.message}`);
+      } else {
+        console.log("Perfil do admin criado/atualizado com sucesso pelo mecanismo de salvaguarda.");
       }
+    } else {
+      console.log("Perfil do admin está correto (role='admin'). Nenhuma atualização de perfil necessária.");
     }
-    
-    console.log("Perfil atualizado com sucesso");
     
     toast({
       title: "Administrador criado com sucesso",

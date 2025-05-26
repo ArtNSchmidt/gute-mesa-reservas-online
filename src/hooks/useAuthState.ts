@@ -35,27 +35,57 @@ export const useAuthState = () => {
         }
         
         // Se tem sessão, verificar se é admin
-        const admin = await verifyAdminAndGetData(session.user.id);
-        
-        if (admin) {
-          if (isMounted) {
-            setAuthState({
-              admin,
-              isAuthenticated: true,
-              isLoading: false
-            });
-          }
-        } else {
-          // Se não for admin, deslogar mas sem redirecionamento automático
-          await supabase.auth.signOut();
+        console.log(`Checking admin status for user ID: ${session.user.id}`);
+        try {
+          const admin = await verifyAdminAndGetData(session.user.id);
+          console.log(`Admin status check result for ${session.user.id}: ${JSON.stringify(admin)}`);
           
+          if (admin) {
+            if (isMounted) {
+              setAuthState({
+                admin,
+                isAuthenticated: true,
+                isLoading: false
+              });
+            }
+          } else {
+            // Se não for admin, não deslogar. Apenas atualizar o estado.
+            // O verifyAdminAndGetData já loga os detalhes do porquê não é admin
+            // ou se houve erro.
+            // Mostrar toast apenas se o perfil foi carregado mas não é admin.
+            // O verifyAdminAndGetData retorna null tanto para "não admin" quanto para "erro ao buscar perfil"
+            // Precisamos de uma forma de distinguir ou assumir que se admin é null e não houve erro aqui,
+            // foi uma falha na verificação de admin (perfil não admin ou não encontrado).
+            // Para simplificar, vamos assumir que se admin é null, o toast é pertinente
+            // a menos que um erro específico tenha sido capturado abaixo.
+            if (isMounted) {
+              // Verificando se o usuário existe, mas não é admin para mostrar o Toast.
+              // Esta lógica pode precisar de ajuste dependendo de como verifyAdminAndGetData lida com erros vs não-admin.
+              // Por agora, se admin é null e não houve erro capturado aqui, consideramos não-admin.
+              const { data: profileData } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', session.user.id)
+                .single();
+
+              if (profileData && profileData.role !== 'admin') {
+                toast({
+                  title: "Acesso negado",
+                  description: "Você não tem permissão para acessar o painel administrativo.",
+                  variant: "destructive"
+                });
+              }
+              
+              setAuthState({
+                admin: null,
+                isAuthenticated: false,
+                isLoading: false
+              });
+            }
+          }
+        } catch (error: any) {
+          console.error(`Error during admin verification for ${session.user.id}: ${error.message}`);
           if (isMounted) {
-            toast({
-              title: "Acesso negado",
-              description: "Você não tem permissão para acessar o painel administrativo.",
-              variant: "destructive"
-            });
-            
             setAuthState({
               admin: null,
               isAuthenticated: false,
@@ -63,8 +93,8 @@ export const useAuthState = () => {
             });
           }
         }
-      } catch (error) {
-        console.error('Erro ao verificar sessão:', error);
+      } catch (error) { // Catch para o try do checkSession
+        console.error('Erro geral ao verificar sessão:', error); // Mudado para erro geral
         if (isMounted) {
           setAuthState({
             admin: null,
@@ -100,7 +130,9 @@ export const useAuthState = () => {
             if (!isMounted) return;
             
             try {
+              console.log(`Checking admin status for user ID: ${session.user.id}`);
               const admin = await verifyAdminAndGetData(session.user.id);
+              console.log(`Admin status check result for ${session.user.id}: ${JSON.stringify(admin)}`);
               
               if (admin) {
                 setAuthState({
@@ -109,16 +141,29 @@ export const useAuthState = () => {
                   isLoading: false
                 });
               } else {
-                // Se não for admin, não fazer logout automático aqui
-                // para evitar loops. Apenas atualizar o estado.
+                // Se não for admin, não deslogar. Apenas atualizar o estado.
+                // O verifyAdminAndGetData já loga os detalhes.
+                // Mostrar toast apenas se o perfil foi carregado mas não é admin.
+                const { data: profileData } = await supabase
+                  .from('profiles')
+                  .select('role')
+                  .eq('id', session.user.id)
+                  .single();
+
+                if (profileData && profileData.role !== 'admin') {
+                   // Não mostrar toast aqui para evitar duplicidade com checkSession
+                   // e potenciais loops de notificação em mudanças rápidas de estado.
+                   // A lógica de toast é mais crítica no checkSession inicial.
+                }
+
                 setAuthState({
                   admin: null,
                   isAuthenticated: false,
                   isLoading: false
                 });
               }
-            } catch (error) {
-              console.error('Erro ao verificar admin:', error);
+            } catch (error: any) {
+              console.error(`Error during admin verification for ${session.user.id}: ${error.message}`);
               setAuthState({
                 admin: null,
                 isAuthenticated: false,

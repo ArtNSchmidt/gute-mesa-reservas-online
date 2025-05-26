@@ -57,13 +57,14 @@ const Dashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-[var(--brand-background-light)]">
       <Navbar />
-      <div className="flex-1 py-12 bg-gray-50">
+      <div className="flex-1 py-8 md:py-12 bg-[var(--brand-background-light)]">
         <div className="container mx-auto px-4">
           <DashboardHeader authState={authState} onLogout={handleLogout} />
 
-          <div className="bg-white shadow-md rounded-lg p-6">
+          {/* Main content card for tabs */}
+          <div className="bg-[var(--brand-background-light)] shadow-lg rounded-lg p-4 sm:p-6 border border-[var(--brand-primary)]/10 mt-6 md:mt-8">
             <DashboardTabs 
               reservations={reservations}
               isLoading={isLoading}

@@ -96,10 +96,10 @@ const CreateAdmin: React.FC = () => {
   // Se estiver carregando a autenticação, mostra um indicador de carregamento
   if (authState.isLoading) {
     return (
-      <div className="min-h-screen flex flex-col bg-gradient-to-b from-white to-gray-100">
+      <div className="min-h-screen flex flex-col bg-[var(--brand-background-light)]">
         <Navbar />
-        <div className="flex-1 flex items-center justify-center p-4">
-          <p>Verificando permissões...</p>
+        <div className="flex-1 flex items-center justify-center p-4 text-[var(--brand-text-dark)]/80">
+          <p>Verificando permissões...</p> {/* Consider adding a spinner icon here */}
         </div>
         <Footer />
       </div>
@@ -107,23 +107,23 @@ const CreateAdmin: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-white to-gray-100">
+    <div className="min-h-screen flex flex-col bg-[var(--brand-background-light)]">
       <Navbar />
       <div className="flex-1 flex items-center justify-center p-4 sm:p-6 md:p-8">
-        <Card className="w-full max-w-md shadow-lg border-restaurant-forest-green/20">
-          <CardHeader className="space-y-1 bg-restaurant-forest-green text-white rounded-t-lg p-6">
-            <CardTitle className="text-2xl font-playfair font-bold flex items-center gap-2">
+        <Card className="w-full max-w-md shadow-xl border-[var(--brand-primary)]/20 rounded-lg">
+          <CardHeader className="space-y-1 bg-[var(--brand-background-dark)] text-[var(--brand-text-light)] rounded-t-lg p-6">
+            <CardTitle className="text-2xl font-playfair font-bold flex items-center gap-2 text-[var(--brand-text-light)]">
               <UserPlus size={24} />
               Criar Administrador
             </CardTitle>
-            <CardDescription className="text-gray-100">
+            <CardDescription className="text-[var(--brand-verde-claro)]">
               Crie uma conta administrativa para acessar o painel
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-6">
+          <CardContent className="p-6 bg-[var(--brand-background-light)] rounded-b-lg">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="name" className="text-gray-700">Nome</Label>
+                <Label htmlFor="name" className="text-[var(--brand-text-dark)]">Nome</Label>
                 <Input
                   id="name"
                   type="text"
@@ -131,12 +131,13 @@ const CreateAdmin: React.FC = () => {
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Nome completo"
                   required
-                  className="border-gray-300 focus:border-restaurant-forest-green focus:ring focus:ring-restaurant-forest-green/20"
+                  className="border-gray-300 focus:border-[var(--brand-primary)] focus:ring-[var(--brand-primary)]/30"
+                  disabled={isLoading}
                 />
               </div>
             
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-gray-700">Email</Label>
+                <Label htmlFor="email" className="text-[var(--brand-text-dark)]">Email</Label>
                 <Input
                   id="email"
                   type="email"
@@ -144,12 +145,13 @@ const CreateAdmin: React.FC = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="seu.email@exemplo.com"
                   required
-                  className="border-gray-300 focus:border-restaurant-forest-green focus:ring focus:ring-restaurant-forest-green/20"
+                  className="border-gray-300 focus:border-[var(--brand-primary)] focus:ring-[var(--brand-primary)]/30"
+                  disabled={isLoading}
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-gray-700">Senha</Label>
+                <Label htmlFor="password" className="text-[var(--brand-text-dark)]">Senha</Label>
                 <Input
                   id="password"
                   type="password"
@@ -157,23 +159,24 @@ const CreateAdmin: React.FC = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Crie uma senha segura"
                   required
-                  className="border-gray-300 focus:border-restaurant-forest-green focus:ring focus:ring-restaurant-forest-green/20"
+                  className="border-gray-300 focus:border-[var(--brand-primary)] focus:ring-[var(--brand-primary)]/30"
+                  disabled={isLoading}
                 />
               </div>
               
               <Button 
                 type="submit" 
-                className="w-full bg-restaurant-light-green hover:bg-restaurant-forest-green transition-colors text-restaurant-dark-wine font-medium py-6"
+                className="w-full bg-[var(--brand-primary)] hover:bg-[var(--brand-secondary)] transition-colors text-[var(--brand-text-light)] font-medium py-3"
                 disabled={isLoading}
               >
                 {isLoading ? 'Criando...' : 'Criar Administrador'}
               </Button>
             </form>
-            <div className="mt-4 text-center">
+            <div className="mt-6 text-center">
               <Button 
                 variant="link" 
                 onClick={() => navigate('/admin/dashboard')}
-                className="text-restaurant-forest-green hover:text-restaurant-dark-wine"
+                className="text-[var(--brand-primary)] hover:text-[var(--brand-secondary)]"
               >
                 Voltar para o painel
               </Button>

@@ -14,25 +14,25 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ authState, onLogout }
   const navigate = useNavigate();
 
   return (
-    <header className="mb-8 flex justify-between items-center">
+    <header className="mb-6 md:mb-8 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
       <div>
-        <h1 className="text-3xl font-bold mb-2">Painel Administrativo</h1>
-        <p className="text-gray-600">
-          Bem-vindo, {authState.admin?.name || 'Administrador'}. Gerencie as reservas do restaurante.
+        <h1 className="text-2xl md:text-3xl font-bold text-[var(--brand-text-dark)]">Painel Administrativo</h1>
+        <p className="text-[var(--brand-text-dark)]/80">
+          Bem-vindo, <span className="font-semibold">{authState.admin?.name || 'Administrador'}</span>. Gerencie as reservas do restaurante.
         </p>
       </div>
-      <div className="flex space-x-4">
+      <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
         <Button 
           onClick={() => navigate('/admin/create-admin')} 
           variant="outline" 
-          className="border-restaurant-forest-green text-restaurant-forest-green hover:bg-restaurant-forest-green/10"
+          className="border-[var(--brand-primary)] text-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/5 hover:text-[var(--brand-secondary)]"
         >
           <UserPlus className="mr-2 h-4 w-4" /> Novo Admin
         </Button>
         <Button 
           onClick={onLogout} 
           variant="outline" 
-          className="border-restaurant-dark-wine text-restaurant-dark-wine hover:bg-restaurant-dark-wine/10"
+          className="border-[var(--brand-vinho-escuro)]/80 text-[var(--brand-vinho-escuro)]/90 hover:bg-[var(--brand-vinho-escuro)]/10 hover:text-[var(--brand-vinho-escuro)]"
         >
           <LogOut className="mr-2 h-4 w-4" /> Sair
         </Button>

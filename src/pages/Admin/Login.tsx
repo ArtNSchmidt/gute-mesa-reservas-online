@@ -86,51 +86,51 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-white to-gray-100">
+    <div className="min-h-screen flex flex-col bg-[var(--brand-background-light)]">
       <Navbar />
       <div className="flex-1 flex items-center justify-center p-4 sm:p-6 md:p-8">
-        <Card className="w-full max-w-md shadow-lg border-restaurant-forest-green/20">
-          <CardHeader className="space-y-1 bg-restaurant-forest-green text-white rounded-t-lg p-6">
-            <CardTitle className="text-2xl font-playfair font-bold flex items-center gap-2">
+        <Card className="w-full max-w-md shadow-xl border-[var(--brand-primary)]/20 rounded-lg">
+          <CardHeader className="space-y-1 bg-[var(--brand-background-dark)] text-[var(--brand-text-light)] rounded-t-lg p-6">
+            <CardTitle className="text-2xl font-playfair font-bold flex items-center gap-2 text-[var(--brand-text-light)]">
               <User size={24} />
               Portal Administrativo
             </CardTitle>
-            <CardDescription className="text-gray-100">
+            <CardDescription className="text-[var(--brand-verde-claro)]">
               Acesse o painel administrativo da Taberna do Gute
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-6">
-            <form onSubmit={handleLogin} className="space-y-4">
+          <CardContent className="p-6 bg-[var(--brand-background-light)] rounded-b-lg">
+            <form onSubmit={handleLogin} className="space-y-6">
               {loginError && (
-                <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-800">
+                <Alert variant="destructive" className="bg-red-100 border-red-400 text-red-700"> {/* Slightly adjusted for potentially better contrast if needed */}
                   <AlertCircle className="h-4 w-4 text-red-600" />
                   <AlertDescription>{loginError}</AlertDescription>
                 </Alert>
               )}
               
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-gray-700">Email</Label>
+                <Label htmlFor="email" className="text-[var(--brand-text-dark)]">Email</Label>
                 <Input
                   id="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="seu.email@exemplo.com"
-                  className="border-gray-300 focus:border-restaurant-forest-green focus:ring focus:ring-restaurant-forest-green/20"
+                  className="border-gray-300 focus:border-[var(--brand-primary)] focus:ring-[var(--brand-primary)]/30"
                   required
                   disabled={isLoading}
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-gray-700">Senha</Label>
+                <Label htmlFor="password" className="text-[var(--brand-text-dark)]">Senha</Label>
                 <Input
                   id="password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Sua senha"
-                  className="border-gray-300 focus:border-restaurant-forest-green focus:ring focus:ring-restaurant-forest-green/20"
+                  className="border-gray-300 focus:border-[var(--brand-primary)] focus:ring-[var(--brand-primary)]/30"
                   required
                   disabled={isLoading}
                 />
@@ -138,12 +138,12 @@ const Login: React.FC = () => {
               
               <Button 
                 type="submit" 
-                className="w-full bg-restaurant-light-green hover:bg-restaurant-forest-green transition-colors text-restaurant-dark-wine font-medium py-6"
+                className="w-full bg-[var(--brand-primary)] hover:bg-[var(--brand-secondary)] transition-colors text-[var(--brand-text-light)] font-medium py-3" // Adjusted padding
                 disabled={isLoading}
               >
                 {isLoading ? (
-                  <span className="flex items-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                  <span className="flex items-center justify-center gap-2">
+                    <Loader2 className="h-5 w-5 animate-spin" />
                     Entrando...
                   </span>
                 ) : 'Entrar'}
@@ -151,7 +151,7 @@ const Login: React.FC = () => {
             </form>
 
             {/* Admin initialization */}
-            <div className="mt-6 text-center border-t border-gray-200 pt-4">
+            <div className="mt-8 text-center border-t border-gray-200 pt-6">
               <Dialog open={showAdminDialog} onOpenChange={(open) => {
                 setShowAdminDialog(open);
                 if (!open) {
@@ -161,22 +161,25 @@ const Login: React.FC = () => {
                 }
               }}>
                 <DialogTrigger asChild>
-                  <Button variant="outline" className="text-restaurant-forest-green hover:text-restaurant-dark-wine flex items-center gap-2">
+                  <Button 
+                    variant="outline" 
+                    className="text-[var(--brand-primary)] border-[var(--brand-primary)] hover:text-[var(--brand-accent)] hover:border-[var(--brand-accent)] flex items-center gap-2"
+                  >
                     <ShieldCheck size={16} />
                     Inicializar Administrador
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="bg-[var(--brand-background-light)]">
                   <DialogHeader>
-                    <DialogTitle>Adicionar Administrador Inicial</DialogTitle>
-                    <DialogDescription>
+                    <DialogTitle className="text-[var(--brand-text-dark)] font-playfair">Adicionar Administrador Inicial</DialogTitle>
+                    <DialogDescription className="text-[var(--brand-text-dark)]/80">
                       Esta opção deve ser usada apenas para criar o administrador inicial do sistema.
                       Um email de confirmação será enviado para o endereço fornecido.
                     </DialogDescription>
                   </DialogHeader>
                   <form onSubmit={handleCreateAdmin} className="space-y-4 py-4">
                     {emailSent ? (
-                      <Alert className="bg-green-50 border-green-200 text-green-800">
+                      <Alert className="bg-green-100 border-green-400 text-green-700">
                         <CheckCircle className="h-4 w-4 text-green-600" />
                         <AlertDescription>
                           Email de confirmação enviado com sucesso para {newAdminEmail}. 
@@ -184,33 +187,34 @@ const Login: React.FC = () => {
                         </AlertDescription>
                       </Alert>
                     ) : adminError ? (
-                      <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-800">
+                      <Alert variant="destructive" className="bg-red-100 border-red-400 text-red-700">
                         <AlertCircle className="h-4 w-4 text-red-600" />
                         <AlertDescription>{adminError}</AlertDescription>
                       </Alert>
                     ) : null}
                     
                     <div className="space-y-2">
-                      <Label htmlFor="newAdminEmail">Email do Administrador</Label>
+                      <Label htmlFor="newAdminEmail" className="text-[var(--brand-text-dark)]">Email do Administrador</Label>
                       <Input
                         id="newAdminEmail"
                         type="email"
                         value={newAdminEmail}
                         onChange={(e) => setNewAdminEmail(e.target.value)}
                         placeholder="admin@exemplo.com"
+                        className="border-gray-300 focus:border-[var(--brand-primary)] focus:ring-[var(--brand-primary)]/30"
                         required
                         disabled={isCreatingAdmin || emailSent}
                       />
                     </div>
                     
-                    <DialogFooter className="flex flex-col sm:flex-row gap-2">
+                    <DialogFooter className="flex flex-col sm:flex-row gap-2 pt-2">
                       {emailSent ? (
                         <>
                           <Button 
                             type="button" 
                             variant="outline"
                             onClick={() => setShowAdminDialog(false)}
-                            className="w-full"
+                            className="w-full border-[var(--brand-secondary)] text-[var(--brand-secondary)] hover:border-[var(--brand-primary)] hover:text-[var(--brand-primary)]"
                           >
                             Fechar
                           </Button>
@@ -220,7 +224,7 @@ const Login: React.FC = () => {
                               setEmailSent(false);
                               setNewAdminEmail('');
                             }}
-                            className="w-full bg-restaurant-forest-green text-white"
+                            className="w-full bg-[var(--brand-primary)] hover:bg-[var(--brand-secondary)] text-[var(--brand-text-light)]"
                           >
                             Enviar para outro email
                           </Button>
@@ -229,11 +233,11 @@ const Login: React.FC = () => {
                         <Button 
                           type="submit" 
                           disabled={isCreatingAdmin}
-                          className="w-full bg-restaurant-forest-green text-white"
+                          className="w-full bg-[var(--brand-primary)] hover:bg-[var(--brand-secondary)] text-[var(--brand-text-light)]"
                         >
                           {isCreatingAdmin ? (
-                            <span className="flex items-center gap-2">
-                              <Loader2 className="h-4 w-4 animate-spin" />
+                            <span className="flex items-center justify-center gap-2">
+                              <Loader2 className="h-5 w-5 animate-spin" />
                               Enviando...
                             </span>
                           ) : 'Enviar Confirmação'}
